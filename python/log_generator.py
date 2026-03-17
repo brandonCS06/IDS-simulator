@@ -94,7 +94,7 @@ def generate_attack_activity(num_attempts=5, base_time=None):
 
 def main():
     parser = argparse.ArgumentParser(description="Generate simulated network activity logs in JSON format.")
-    parser.add_argument("--output", default="raw_logs.json", help="Output JSON file path (default: raw_logs.json).")
+    parser.add_argument("--output", default="Events.json", help="Output JSON file path (default: Events.json).")
     parser.add_argument("--normal", type=int, default=10, help="Number of normal events to generate.")
     parser.add_argument("--attacks", type=int, default=1, help="Number of attack sequences to generate.")
     parser.add_argument("--attempts_per_attack", type=int, default=5, help="Failed attempts per attack.")
