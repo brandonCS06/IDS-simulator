@@ -18,7 +18,7 @@ public class BruteForceRule implements RuleEngineRules{
     @Override
     public List<Alert> onEvent(Event event) {
         //ignores non login events
-        if(!"login".equalsIgnoreCase(event.getAction())){
+        if(event.getAction() == null || !event.getAction().toUpperCase().startsWith("LOGIN")){
             return new ArrayList<>();
         }
 
