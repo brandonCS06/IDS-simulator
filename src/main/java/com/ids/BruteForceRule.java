@@ -25,11 +25,11 @@ public class BruteForceRule implements RuleEngineRules{
         // Add the event to the sliding window
         window.addEvent(event);
 
-        // Check if the count of events for this source IP exceeds the threshold
+        // Check if the count of failed login events for this source IP exceeds the threshold
         String sourceIp = event.getSource_ip();
-        if(window.count(sourceIp, "login") >= threshold) {
-            //Collect evidence : recent login events from same IP
-            List<Event> evidence = window.getEvents(sourceIp,"login");
+        if(window.count(sourceIp, "LOGIN_FAIL") >= threshold) {
+            // Collect evidence: recent failed login events from same IP
+            List<Event> evidence = window.getEvents(sourceIp, "LOGIN_FAIL");
 
 
             Alert alert = new Alert(

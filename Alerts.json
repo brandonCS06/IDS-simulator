@@ -1,0 +1,60 @@
+[
+  {
+    "timestamp": 1773775386452,
+    "rule_name": "BruteForceRule",
+    "severity": "high",
+    "evidence": [
+      {
+        "timestamp": 1773775381452,
+        "source_ip": "10.0.0.6",
+        "user": "diana",
+        "action": "LOGIN_FAIL",
+        "target": "web_server",
+        "metadata": {
+          "attempt": 2.0
+        }
+      },
+      {
+        "timestamp": 1773775381452,
+        "source_ip": "10.0.0.6",
+        "user": "diana",
+        "action": "LOGIN_FAIL",
+        "target": "api_gateway",
+        "metadata": {
+          "attempt": 3.0
+        }
+      },
+      {
+        "timestamp": 1773775381452,
+        "source_ip": "10.0.0.6",
+        "user": "diana",
+        "action": "LOGIN_FAIL",
+        "target": "database",
+        "metadata": {
+          "attempt": 4.0
+        }
+      },
+      {
+        "timestamp": 1773775382452,
+        "source_ip": "10.0.0.6",
+        "user": "diana",
+        "action": "LOGIN_FAIL",
+        "target": "database",
+        "metadata": {
+          "attempt": 5.0
+        }
+      },
+      {
+        "timestamp": 1773775386452,
+        "source_ip": "10.0.0.6",
+        "user": "diana",
+        "action": "LOGIN_FAIL",
+        "target": "api_gateway",
+        "metadata": {
+          "attempt": 1.0
+        }
+      }
+    ],
+    "source_ip": "10.0.0.6"
+  }
+]
