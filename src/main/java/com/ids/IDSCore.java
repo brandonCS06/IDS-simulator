@@ -83,9 +83,8 @@ public class IDSCore {
             String eventsFile = args.length > 0 ? args[0] : "Events.json";
             core.loadEvents(eventsFile);
             core.processEvents();
-            core.printAlerts();
-            // Optional: Export to file
-            // core.exportAlerts("Alerts.json");
+            core.exportAlerts("Alerts.json");
+            //Export to file
         } catch (IOException e) {
             System.err.println("Failed to run IDS Core: " + e.getMessage());
             System.exit(1);
