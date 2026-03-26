@@ -1,6 +1,8 @@
-C:\Users\brand\CS Projects\IDS simulator\IDS-simulator\src\test\java\com\ids\AlertTest.java
-C:\Users\brand\CS Projects\IDS simulator\IDS-simulator\src\test\java\com\ids\BruteForceRuleTest.java
-C:\Users\brand\CS Projects\IDS simulator\IDS-simulator\src\test\java\com\ids\EventTest.java
-C:\Users\brand\CS Projects\IDS simulator\IDS-simulator\src\test\java\com\ids\PortScanRuleTest.java
-C:\Users\brand\CS Projects\IDS simulator\IDS-simulator\src\test\java\com\ids\RuleEngineTest.java
-C:\Users\brand\CS Projects\IDS simulator\IDS-simulator\src\test\java\com\ids\SlidingWindowTest.java
+/Users/brandon_le/Downloads/Personal CS Projects/IDS Simulator/src/test/java/com/ids/AlertTest.java
+/Users/brandon_le/Downloads/Personal CS Projects/IDS Simulator/src/test/java/com/ids/BruteForceRuleTest.java
+/Users/brandon_le/Downloads/Personal CS Projects/IDS Simulator/src/test/java/com/ids/EventTest.java
+/Users/brandon_le/Downloads/Personal CS Projects/IDS Simulator/src/test/java/com/ids/IcmpSweepRuleTest.java
+/Users/brandon_le/Downloads/Personal CS Projects/IDS Simulator/src/test/java/com/ids/PortScanRuleTest.java
+/Users/brandon_le/Downloads/Personal CS Projects/IDS Simulator/src/test/java/com/ids/RuleEngineTest.java
+/Users/brandon_le/Downloads/Personal CS Projects/IDS Simulator/src/test/java/com/ids/SlidingWindowTest.java
+/Users/brandon_le/Downloads/Personal CS Projects/IDS Simulator/src/test/java/com/ids/SuspiciousDnsRuleTest.java
