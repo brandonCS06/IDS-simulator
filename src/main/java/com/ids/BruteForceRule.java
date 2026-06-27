@@ -17,20 +17,19 @@ public class BruteForceRule implements RuleEngineRules{
 
     @Override
     public List<Alert> onEvent(Event event) {
-        //ignores non login events
-        if(!"login".equalsIgnoreCase(event.getAction())){
+        if (event == null) {
+            throw new NullPointerException("event must not be null");
+        }
+
+        if (!isFailedLogin(event)) {
             return new ArrayList<>();
         }
 
-        // Add the event to the sliding window
         window.addEvent(event);
 
-        // Check if the count of events for this source IP exceeds the threshold
         String sourceIp = event.getSource_ip();
-        if(window.count(sourceIp, "login") >= threshold) {
-            //Collect evidence : recent login events from same IP
-            List<Event> evidence = window.getEvents(sourceIp,"login");
-
+        if (window.count(sourceIp, "LOGIN_FAIL") >= threshold) {
+            List<Event> evidence = window.getEvents(sourceIp, "LOGIN_FAIL");
 
             Alert alert = new Alert(
                 event.getTimestamp(),
@@ -40,11 +39,15 @@ public class BruteForceRule implements RuleEngineRules{
                 sourceIp
             );
 
-            return List.of(alert);
-            
+            return java.util.Collections.singletonList(alert);
         }
 
         return new ArrayList<>();
+    }
+
+    private boolean isFailedLogin(Event event) {
+        String action = event.getAction();
+        return action != null && ("LOGIN_FAIL".equalsIgnoreCase(action) || "LOGIN_FAILURE".equalsIgnoreCase(action));
     }
 
     @Override
