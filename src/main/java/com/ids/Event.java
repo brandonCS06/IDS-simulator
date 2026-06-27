@@ -78,6 +78,38 @@ public class Event {
         return metadata;
     }
 
+    public String getProtocol() {
+        if (metadata == null) {
+            return null;
+        }
+        Object protocol = metadata.get("protocol");
+        return protocol == null ? null : protocol.toString();
+    }
+
+    public Integer getDestinationPort() {
+        if (metadata == null) {
+            return null;
+        }
+        Object portValue = metadata.get("destination_port");
+        if (portValue == null) {
+            return null;
+        }
+        if (portValue instanceof Integer) {
+            return (Integer) portValue;
+        }
+        if (portValue instanceof Number) {
+            return ((Number) portValue).intValue();
+        }
+        if (portValue instanceof String) {
+            try {
+                return Integer.valueOf((String) portValue);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
     /**
      * Serialize this event into JSON. Used when persisting events or
      * passing them to external tools for analysis.

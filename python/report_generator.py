@@ -1,7 +1,12 @@
 import json
 from collections import Counter
+from pathlib import Path
 
-def load_alerts(path="Alerts.json"):
+def load_alerts(path=None):
+    if path is None:
+        path = Path(__file__).resolve().parent.parent / "Alerts.json"
+    else:
+        path = Path(path)
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
@@ -26,7 +31,17 @@ def format_text_report(total, by_rule, by_ip, top_n=5):
     return "\n".join(lines)
 
 def main():
-    alerts = load_alerts("Alerts.json")
+    try:
+        alerts = load_alerts()
+    except FileNotFoundError:
+        alerts_path = Path(__file__).resolve().parent.parent / "Alerts.json"
+        print(f"Alerts file not found: {alerts_path}\nGenerate alerts by running IDSCore or placing Alerts.json at that location.")
+        return
+
     total, by_rule, by_ip = summarize(alerts)
     report = format_text_report(total, by_rule, by_ip)
     print(report)
+
+
+if __name__ == "__main__":
+    main()
