@@ -161,7 +161,7 @@ public class RuleEngineTest {
         // Adjust based on actual implementation requirements
         try {
             engine.processEvent(null);
-            fail("Should handle null event list");
+            fail("Expected NullPointerException for null events");
         } catch (NullPointerException e) {
             // Expected behavior
         }
