@@ -1,9 +1,10 @@
 package com.ids;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-public class BruteForceRule implements RuleEngineRules{
+public class BruteForceRule implements RuleEngineRules {
     private static final long time_Window_ms = 60_000; // 1 minute window
     private static final int threshold = 5; // Threshold for failed logins
 
@@ -22,32 +23,29 @@ public class BruteForceRule implements RuleEngineRules{
         }
 
         if (!isFailedLogin(event)) {
-        //ignores non login events
-        if(event.getAction() == null || !event.getAction().toUpperCase().startsWith("LOGIN")){
             return new ArrayList<>();
         }
 
         window.addEvent(event);
 
         String sourceIp = event.getSource_ip();
-        if (window.count(sourceIp, "LOGIN_FAIL") >= threshold) {
-            List<Event> evidence = window.getEvents(sourceIp, "LOGIN_FAIL");
-        // Check if the count of failed login events for this source IP exceeds the threshold
-        String sourceIp = event.getSource_ip();
-        if(window.count(sourceIp, "LOGIN_FAIL") >= threshold) {
-            // Collect evidence: recent failed login events from same IP
-            List<Event> evidence = window.getEvents(sourceIp, "LOGIN_FAIL");
+        List<Event> evidence = window.getEvents(sourceIp, null);
+        List<Event> failedLogins = new ArrayList<>();
+        for (Event evidenceEvent : evidence) {
+            if (isFailedLogin(evidenceEvent)) {
+                failedLogins.add(evidenceEvent);
+            }
+        }
 
-
+        if (failedLogins.size() >= threshold) {
             Alert alert = new Alert(
                 event.getTimestamp(),
                 ruleName,
                 severity,
-                evidence,
+                failedLogins,
                 sourceIp
             );
-
-            return java.util.Collections.singletonList(alert);
+            return Collections.singletonList(alert);
         }
 
         return new ArrayList<>();
