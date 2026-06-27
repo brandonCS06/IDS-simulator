@@ -30,3 +30,7 @@ def main():
     total, by_rule, by_ip = summarize(alerts)
     report = format_text_report(total, by_rule, by_ip)
     print(report)
+
+
+if __name__ == "__main__":
+    main()
