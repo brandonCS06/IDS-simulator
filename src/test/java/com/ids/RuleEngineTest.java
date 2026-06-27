@@ -151,15 +151,16 @@ public class RuleEngineTest {
         assertEquals(1, alerts.size());
     }
 
-    @Test
+   @Test
     public void testNullEventsList() {
+    
         engine.registerRule(new BruteForceRule());
         
         // processEvent should handle null gracefully or we expect an exception
         // Based on current implementation, it will throw NullPointerException
         // Adjust based on actual implementation requirements
         try {
-            List<Alert> alerts = engine.processEvent(null);
+            engine.processEvent(null);
             fail("Should handle null event list");
         } catch (NullPointerException e) {
             // Expected behavior
