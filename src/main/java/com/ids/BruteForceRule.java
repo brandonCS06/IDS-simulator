@@ -22,6 +22,8 @@ public class BruteForceRule implements RuleEngineRules{
         }
 
         if (!isFailedLogin(event)) {
+        //ignores non login events
+        if(event.getAction() == null || !event.getAction().toUpperCase().startsWith("LOGIN")){
             return new ArrayList<>();
         }
 
@@ -30,6 +32,12 @@ public class BruteForceRule implements RuleEngineRules{
         String sourceIp = event.getSource_ip();
         if (window.count(sourceIp, "LOGIN_FAIL") >= threshold) {
             List<Event> evidence = window.getEvents(sourceIp, "LOGIN_FAIL");
+        // Check if the count of failed login events for this source IP exceeds the threshold
+        String sourceIp = event.getSource_ip();
+        if(window.count(sourceIp, "LOGIN_FAIL") >= threshold) {
+            // Collect evidence: recent failed login events from same IP
+            List<Event> evidence = window.getEvents(sourceIp, "LOGIN_FAIL");
+
 
             Alert alert = new Alert(
                 event.getTimestamp(),

@@ -1,43 +1,132 @@
 [
     {
-        "timestamp" : 1733874732,
-        "source_ip" : "192.168.1.15",
-        "user" : "admin",
-        "action" : "LOGIN_FAILED",
-        "target" : "ssh",
-        "metadata" : {
-            "port" : 22,
-            "protocol" : "TCP"
+        "timestamp": 1773775381452,
+        "source_ip": "10.0.0.6",
+        "user": "diana",
+        "action": "LOGIN_FAIL",
+        "target": "web_server",
+        "metadata": {
+            "attempt": 2
         }
     },
     {
-        "timestamp" : 1733874740,
-        "source_ip" : "192.168.1.15",
-        "user" : "admin",
-        "action" : "LOGIN_FAILED",
-        "target" : "ssh",
-        "metadata" : {
-            "port" : 22
+        "timestamp": 1773775381452,
+        "source_ip": "10.0.0.6",
+        "user": "diana",
+        "action": "LOGIN_FAIL",
+        "target": "api_gateway",
+        "metadata": {
+            "attempt": 3
         }
     },
     {
-        "timestamp" : 1733874755,
-        "source_ip" : "192.168.1.15",
-        "user" : "admin",
-        "action" : "LOGIN_FAILED",
-        "target" : "ssh",
-        "metadata" : {
-            "port" : 22
+        "timestamp": 1773775381452,
+        "source_ip": "10.0.0.6",
+        "user": "diana",
+        "action": "LOGIN_FAIL",
+        "target": "database",
+        "metadata": {
+            "attempt": 4
         }
     },
     {
-        "timestamp" : 1733874790,
-        "source_ip" : "10.0.0.8",
-        "user" : "John",
-        "action" : "LOGIN_SUCCESS",
-        "target" : "ssh",
-        "metadata" : {
-            "port" : 22
+        "timestamp": 1773775382452,
+        "source_ip": "10.0.0.6",
+        "user": "diana",
+        "action": "LOGIN_FAIL",
+        "target": "database",
+        "metadata": {
+            "attempt": 5
         }
+    },
+    {
+        "timestamp": 1773775386452,
+        "source_ip": "10.0.0.6",
+        "user": "diana",
+        "action": "LOGIN_FAIL",
+        "target": "api_gateway",
+        "metadata": {
+            "attempt": 1
+        }
+    },
+    {
+        "timestamp": 1773775777452,
+        "source_ip": "192.168.1.10",
+        "user": "eve",
+        "action": "ACCESS_GRANTED",
+        "target": "web_server",
+        "metadata": {}
+    },
+    {
+        "timestamp": 1773775868452,
+        "source_ip": "192.168.2.20",
+        "user": "charlie",
+        "action": "LOGIN_SUCCESS",
+        "target": "api_gateway",
+        "metadata": {}
+    },
+    {
+        "timestamp": 1773776250452,
+        "source_ip": "192.168.1.12",
+        "user": "eve",
+        "action": "ACCESS_GRANTED",
+        "target": "web_server",
+        "metadata": {}
+    },
+    {
+        "timestamp": 1773776320452,
+        "source_ip": "192.168.2.20",
+        "user": "diana",
+        "action": "LOGIN_SUCCESS",
+        "target": "web_server",
+        "metadata": {}
+    },
+    {
+        "timestamp": 1773777017452,
+        "source_ip": "192.168.1.10",
+        "user": "diana",
+        "action": "LOGIN_SUCCESS",
+        "target": "file_system",
+        "metadata": {}
+    },
+    {
+        "timestamp": 1773777354452,
+        "source_ip": "192.168.1.12",
+        "user": "charlie",
+        "action": "ACCESS_GRANTED",
+        "target": "api_gateway",
+        "metadata": {}
+    },
+    {
+        "timestamp": 1773777812452,
+        "source_ip": "192.168.1.10",
+        "user": "diana",
+        "action": "LOGIN_SUCCESS",
+        "target": "file_system",
+        "metadata": {}
+    },
+    {
+        "timestamp": 1773778074452,
+        "source_ip": "192.168.1.11",
+        "user": "bob",
+        "action": "LOGIN_SUCCESS",
+        "target": "api_gateway",
+        "metadata": {}
+    },
+    {
+        "timestamp": 1773778359452,
+        "source_ip": "192.168.1.12",
+        "user": "eve",
+        "action": "ACCESS_GRANTED",
+        "target": "database",
+        "metadata": {}
+    },
+    {
+        "timestamp": 1773778452452,
+        "source_ip": "192.168.1.10",
+        "user": "diana",
+        "action": "ACCESS_GRANTED",
+        "target": "api_gateway",
+        "metadata": {}
     }
 ]
