@@ -92,12 +92,35 @@ def generate_attack_activity(num_attempts=5, base_time=None):
     return events
 
 
+def generate_port_scan_activity(num_ports=30, base_time=None):
+    """
+    Generate a list of port scan activity events.
+    - num_ports: Number of unique destination ports to probe.
+    - base_time: Base timestamp for the scan.
+    """
+    events = []
+    ip = generate_ip(is_attack=True)
+    user = generate_user()
+    if base_time is None:
+        base_time = datetime.datetime.now()
+
+    ports = list(range(1024, 1024 + num_ports))
+    for i, port in enumerate(ports):
+        timestamp = int((base_time + datetime.timedelta(milliseconds=i * 200)).timestamp() * 1000)
+        metadata = {"destination_port": port, "attempt": i + 1}
+        event = generate_event("PROBE", ip, user=user, timestamp=timestamp, metadata=metadata)
+        events.append(event)
+    return events
+
+
 def main():
     parser = argparse.ArgumentParser(description="Generate simulated network activity logs in JSON format.")
     parser.add_argument("--output", default="Events.json", help="Output JSON file path (default: Events.json).")
     parser.add_argument("--normal", type=int, default=10, help="Number of normal events to generate.")
     parser.add_argument("--attacks", type=int, default=1, help="Number of attack sequences to generate.")
     parser.add_argument("--attempts_per_attack", type=int, default=5, help="Failed attempts per attack.")
+    parser.add_argument("--portscans", type=int, default=1, help="Number of port scan sequences to generate.")
+    parser.add_argument("--ports_per_scan", type=int, default=30, help="Unique destination ports per port scan sequence.")
     args = parser.parse_args()
 
     base_time = datetime.datetime.now()
@@ -107,6 +130,8 @@ def main():
     events.extend(generate_normal_activity(args.normal, base_time))
     for _ in range(args.attacks):
         events.extend(generate_attack_activity(args.attempts_per_attack, base_time))
+    for _ in range(args.portscans):
+        events.extend(generate_port_scan_activity(args.ports_per_scan, base_time))
 
     # Sort by timestamp for realism
     events.sort(key=lambda e: e["timestamp"])

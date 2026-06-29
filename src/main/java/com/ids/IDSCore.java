@@ -22,6 +22,8 @@ public class IDSCore {
     {
         //adds brute-force detection
         ruleEngine.registerRule(new BruteForceRule());
+        //adds port scan detection
+        ruleEngine.registerRule(new PortScanRule());
     }
 
     public void loadEvents(String filePath) throws IOException {
