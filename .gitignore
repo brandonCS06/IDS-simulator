@@ -22,3 +22,18 @@ Events.json
 
 # XML files
 *.xml
+Alerts.json
+Events.json
+target/classes/com/ids/Alert.class
+target/classes/com/ids/AlertManager.class
+target/classes/com/ids/BruteForceRule.class
+target/classes/com/ids/Event.class
+target/classes/com/ids/Event$1.class
+target/classes/com/ids/IDSCore.class
+target/classes/com/ids/RuleEngine.class
+target/classes/com/ids/RuleEngineRules.class
+target/classes/com/ids/SlidingWindow.class
+target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst
+target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst
+target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/createdFiles.lst
+target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst
