@@ -1,0 +1,6 @@
+com\ids\AlertTest.class
+com\ids\SlidingWindowTest.class
+com\ids\BruteForceRuleTest.class
+com\ids\RuleEngineTest.class
+com\ids\EventTest.class
+com\ids\PortScanRuleTest.class

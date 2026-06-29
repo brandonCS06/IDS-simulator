@@ -1,0 +1,10 @@
+com\ids\Alert.class
+com\ids\BruteForceRule.class
+com\ids\Event$1.class
+com\ids\SlidingWindow.class
+com\ids\AlertManager.class
+com\ids\Event.class
+com\ids\RuleEngineRules.class
+com\ids\IDSCore.class
+com\ids\PortScanRule.class
+com\ids\RuleEngine.class

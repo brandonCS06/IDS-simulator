@@ -1,33 +1,33 @@
 [
   {
-    "timestamp": 1773775386452,
+    "timestamp": 1782592834623,
     "rule_name": "BruteForceRule",
     "severity": "high",
     "evidence": [
       {
-        "timestamp": 1773775381452,
-        "source_ip": "10.0.0.6",
-        "user": "diana",
+        "timestamp": 1782592824623,
+        "source_ip": "203.0.113.1",
+        "user": "eve",
         "action": "LOGIN_FAIL",
-        "target": "web_server",
+        "target": "api_gateway",
         "metadata": {
           "attempt": 2.0
         }
       },
       {
-        "timestamp": 1773775381452,
-        "source_ip": "10.0.0.6",
-        "user": "diana",
+        "timestamp": 1782592824623,
+        "source_ip": "203.0.113.1",
+        "user": "eve",
         "action": "LOGIN_FAIL",
-        "target": "api_gateway",
+        "target": "file_system",
         "metadata": {
           "attempt": 3.0
         }
       },
       {
-        "timestamp": 1773775381452,
-        "source_ip": "10.0.0.6",
-        "user": "diana",
+        "timestamp": 1782592824623,
+        "source_ip": "203.0.113.1",
+        "user": "eve",
         "action": "LOGIN_FAIL",
         "target": "database",
         "metadata": {
@@ -35,26 +35,26 @@
         }
       },
       {
-        "timestamp": 1773775382452,
-        "source_ip": "10.0.0.6",
-        "user": "diana",
+        "timestamp": 1782592824623,
+        "source_ip": "203.0.113.1",
+        "user": "eve",
         "action": "LOGIN_FAIL",
-        "target": "database",
+        "target": "api_gateway",
         "metadata": {
           "attempt": 5.0
         }
       },
       {
-        "timestamp": 1773775386452,
-        "source_ip": "10.0.0.6",
-        "user": "diana",
+        "timestamp": 1782592834623,
+        "source_ip": "203.0.113.1",
+        "user": "eve",
         "action": "LOGIN_FAIL",
-        "target": "api_gateway",
+        "target": "file_system",
         "metadata": {
           "attempt": 1.0
         }
       }
     ],
-    "source_ip": "10.0.0.6"
+    "source_ip": "203.0.113.1"
   }
 ]
