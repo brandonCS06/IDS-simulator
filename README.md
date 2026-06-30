@@ -248,7 +248,7 @@ In `PortScanRule.java`, adjust:
 
 ```java
 private static final long WINDOW_MS = 60_000; // Time window in milliseconds
-private static final int PORT_THRESHOLD = 30; // failed login threshold
+private static final int PORT_THRESHOLD = 30; // Port Destination Threshold
 ```
 
 ## Output Files
