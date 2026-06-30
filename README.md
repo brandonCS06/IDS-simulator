@@ -244,7 +244,7 @@ private static final long time_Window_ms = 60_000;  // Time window in millisecon
 private static final int threshold = 5;             // Failed login threshold
 ```
 
-In 'PortScanRule.java', adjust:
+In `PortScanRule.java`, adjust:
 
 ```java
 private static final long WINDOW_MS = 60_000; // Time window in milliseconds
