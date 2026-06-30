@@ -191,6 +191,7 @@ IDS-simulator/
 │       ├── RuleEngine.java        # Rule evaluation engine
 │       ├── RuleEngineRules.java   # Rule interface
 │       ├── BruteForceRule.java    # Brute force detection
+|       ├── PortScanRule.java      # Port scan Detection
 │       ├── Event.java             # Event model
 │       ├── Alert.java             # Alert model
 │       ├── AlertManager.java      # Alert collection
@@ -241,6 +242,13 @@ In `BruteForceRule.java`, adjust:
 ```java
 private static final long time_Window_ms = 60_000;  // Time window in milliseconds
 private static final int threshold = 5;             // Failed login threshold
+```
+
+In 'PortScanRule.java', adjust:
+
+```java
+private static final long WINDOW_MS = 60_000; // Time window in milliseconds
+private static final int PORT_THRESHOLD = 30; // failed login threshold
 ```
 
 ## Output Files
