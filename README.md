@@ -21,6 +21,7 @@ The IDS Simulator is designed to:
 - **RuleEngine** - Evaluates each security event against registered detection rules
 - **RuleEngineRules** - Interface for implementing custom threat detection rules
 - **BruteForceRule** - Detects brute force login attacks using a sliding time window with configurable thresholds
+- **PortScanRule** - Detects when a single source IP attempts to connect to 30+ different ports within a 60 second window
 - **SlidingWindow** - Time-based event window (1-minute default) for tracking events by source IP and action type
 - **Event** - Canonical representation of a security event (timestamp, source IP, user, action, target, metadata)
 - **Alert** - Generated when a rule detects suspicious activity; includes severity, rule name, and supporting evidence
@@ -41,7 +42,7 @@ IDSCore.loadEvents()
     ↓
 RuleEngine.processEvent() [runs each event through all rules]
     ↓
-BruteForceRule.onEvent() [evaluates against detection logic]
+[Insert Rule Name].onEvent() [evaluates against detection logic]
     ↓
 AlertManager [accumulates alerts]
     ↓
@@ -113,6 +114,13 @@ Outputs a summary of alerts including:
 - **Threshold**: 5+ failed login events
 - **Severity**: High
 - **Evidence**: List of failed login events that triggered the alert
+
+#### PortScanRule
+- **Purpose**: Detects when a single source IP attempts to connect to 30+ different ports within a 60-second window
+- **Window**: 1-minute sliding window
+- **Threshold**: 30+ different ports
+- **Severity**: High
+- **Evidence**: The recent events from the same source IP showing 30+ unique destination ports within a 60-second window
 
 ### Adding Custom Rules
 
