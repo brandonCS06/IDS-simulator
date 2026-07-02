@@ -24,6 +24,8 @@ public class IDSCore {
         ruleEngine.registerRule(new BruteForceRule());
         //adds port scan detection
         ruleEngine.registerRule(new PortScanRule());
+        //adds suspicious DNS detection
+        ruleEngine.registerRule(new SuspiciousDnsRule());
     }
 
     public void loadEvents(String filePath) throws IOException {
