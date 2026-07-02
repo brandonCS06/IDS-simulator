@@ -26,8 +26,8 @@ def format_text_report(total, by_rule, by_ip, top_n=5):
         lines.append(f"{rule}: {count}")
     lines.append("")
     lines.append("Top Attacker IPs:")
-    for ip, _ in by_ip.most_common(top_n):
-        lines.append(ip)
+    for ip, count in by_ip.most_common(top_n):
+        lines.append(f"{ip}: {count}")
     return "\n".join(lines)
 
 def main():
