@@ -22,6 +22,7 @@ The IDS Simulator is designed to:
 - **RuleEngineRules** - Interface for implementing custom threat detection rules
 - **BruteForceRule** - Detects brute force login attacks using a sliding time window with configurable thresholds
 - **PortScanRule** - Detects when a single source IP attempts to connect to 30+ different ports within a 60 second window
+- **SuspiciousDnsRule** - Detects suspicious DNS tunneling patterns using repeated high-entropy or failed DNS queries within a sliding window
 - **SlidingWindow** - Time-based event window (1-minute default) for tracking events by source IP and action type
 - **Event** - Canonical representation of a security event (timestamp, source IP, user, action, target, metadata)
 - **Alert** - Generated when a rule detects suspicious activity; includes severity, rule name, and supporting evidence
@@ -93,6 +94,13 @@ python python/log_generator.py --output Events.json --count 1000
 
 Generates events with a mix of normal activity and attack patterns.
 
+To include suspicious DNS activity in the sample stream:
+
+```bash
+python python/log_generator.py --output Events.json --dnsattacks 1 --dns_queries_per_attack 6
+```
+
+This adds DNS events with metadata such as `protocol`, `query_name`, `qtype`, `rcode`, `response_size`, `label_length`, and `entropy` so the SuspiciousDnsRule can evaluate them.
 #### Generate Report
 
 ```bash
@@ -121,6 +129,13 @@ Outputs a summary of alerts including:
 - **Threshold**: 30+ different ports
 - **Severity**: High
 - **Evidence**: The recent events from the same source IP showing 30+ unique destination ports within a 60-second window
+
+#### SuspiciousDnsRule
+- **Purpose**: Detects suspicious DNS tunneling or exfiltration patterns by combining multiple DNS indicators over time
+- **Window**: 1-minute sliding window
+- **Indicators**: long query names, high entropy, suspicious qtypes such as TXT or NULL, failed DNS responses such as NXDOMAIN or SERVFAIL, and unusually large responses
+- **Severity**: High
+- **Evidence**: DNS events from the same source IP within the detection window
 
 ### Adding Custom Rules
 
@@ -158,7 +173,14 @@ Events follow this JSON structure:
   "target": "web_server",
   "metadata": {
     "session_id": "abc123",
-    "duration_ms": 5000
+        "duration_ms": 5000,
+        "protocol": "DNS",
+        "query_name": "token.exfil.example.com",
+        "qtype": "TXT",
+        "rcode": "NXDOMAIN",
+        "response_size": 600,
+        "label_length": 24,
+        "entropy": 4.8
   }
 }
 ```
@@ -195,7 +217,8 @@ IDS-simulator/
 │       ├── Event.java             # Event model
 │       ├── Alert.java             # Alert model
 │       ├── AlertManager.java      # Alert collection
-│       └── SlidingWindow.java     # Time-based event window
+│       ├── SlidingWindow.java     # Time-based event window
+|       ├── SuspiciousDnsRule.java # DNS tunneling detection
 └── python/
     ├── log_generator.py       # Synthetic event generation
     ├── log_parser.py          # Raw log parsing
@@ -250,6 +273,15 @@ In `PortScanRule.java`, adjust:
 private static final long WINDOW_MS = 60_000; // Time window in milliseconds
 private static final int PORT_THRESHOLD = 30; // Port Destination Threshold
 ```
+
+In `SuspiciousDnsRule.java`, adjust:
+
+```java
+private static final long WINDOW_MS = 60_000;
+private static final int MIN_DNS_EVENTS = 5;
+private static final int SCORE_THRESHOLD = 8;
+```
+
 
 ## Output Files
 
