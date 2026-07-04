@@ -26,6 +26,8 @@ public class IDSCore {
         ruleEngine.registerRule(new PortScanRule());
         //adds suspicious DNS detection
         ruleEngine.registerRule(new SuspiciousDnsRule());
+        //adds SYN flood detection
+        ruleEngine.registerRule(new SynFloodRule());
         //adds ICMP sweep detection
         ruleEngine.registerRule(new IcmpSweepRule());
     }

@@ -24,6 +24,7 @@ The IDS Simulator is designed to:
 - **PortScanRule** - Detects when a single source IP attempts to connect to 30+ different ports within a 60 second window
 - **IcmpSweepRule** - Detects when a single source host pings many different destination IPs within a short window
 - **SuspiciousDnsRule** - Detects suspicious DNS tunneling patterns using repeated high-entropy or failed DNS queries within a sliding window
+- **SynFloodRule** - Detects SYN flood patterns by tracking bursty TCP SYN traffic with low ACK completion over a short sliding window
 - **SlidingWindow** - Time-based event window (1-minute default) for tracking events by source IP and action type
 - **Event** - Canonical representation of a security event (timestamp, source IP, user, action, target, metadata)
 - **Alert** - Generated when a rule detects suspicious activity; includes severity, rule name, and supporting evidence
@@ -111,6 +112,14 @@ python python/log_generator.py --output Events.json --icmpsweeps 1 --icmp_target
 
 This adds ICMP echo request events with metadata such as `protocol`, `icmp_type`, and `destination_ip` so the IcmpSweepRule can evaluate them.
 
+To include SYN flood activity in the sample stream:
+
+```bash
+python python/log_generator.py --output Events.json --synfloods 1 --syn_packets_per_flood 80 --acks_per_flood 5
+```
+
+This adds TCP SYN burst events (with sparse ACK completion) using metadata such as `protocol`, `destination_ip`, `destination_port`, `tcp_flags`, `syn`, and `ack` so the SynFloodRule can evaluate them.
+
 #### Generate Report
 
 ```bash
@@ -151,6 +160,13 @@ Outputs a summary of alerts including:
 - **Indicators**: long query names, high entropy, suspicious qtypes such as TXT or NULL, failed DNS responses such as NXDOMAIN or SERVFAIL, and unusually large responses
 - **Severity**: High
 - **Evidence**: DNS events from the same source IP within the detection window
+
+#### SynFloodRule
+- **Purpose**: Detects likely SYN flood behavior from a source to a destination tuple
+- **Window**: 10-second sliding window
+- **Threshold**: 60+ SYN packets with ACK ratio below 0.20
+- **Severity**: High
+- **Evidence**: TCP events from the same source/destination tuple within the detection window
 
 ### Adding Custom Rules
 
@@ -232,6 +248,7 @@ IDS-simulator/
 │       ├── BruteForceRule.java    # Brute force detection
 |       ├── PortScanRule.java      # Port scan Detection
 │       ├── IcmpSweepRule.java     # ICMP sweep detection
+|       ├── SynFloodRule.java      # SYN flood detection
 │       ├── Event.java             # Event model
 │       ├── Alert.java             # Alert model
 │       ├── AlertManager.java      # Alert collection
@@ -305,6 +322,15 @@ In `SuspiciousDnsRule.java`, adjust:
 private static final long WINDOW_MS = 60_000; // Time window in milliseconds
 private static final int MIN_DNS_EVENTS = 5; // Minimum events needed to raise alerts
 private static final int SCORE_THRESHOLD = 8; // Suspicion threshold
+```
+
+In `SynFloodRule.java`, adjust:
+
+```java
+private static final long WINDOW_MS = 10_000; // Time window in milliseconds
+private static final int SYN_THRESHOLD = 60; // Minimum SYN packet count within the window required before evaluating flood behavior
+private static final int MIN_SYN_FOR_RATIO = 30; // Minimum SYN denominator used to avoid ratio checks on very small traffic bursts
+private static final double MAX_ACK_RATIO = 0.20d; // Maximum ACK-to-SYN ratio allowed; lower observed ratios indicate likely SYN flood traffic
 ```
 
 ## Output Files
