@@ -113,6 +113,37 @@ def generate_port_scan_activity(num_ports=30, base_time=None):
     return events
 
 
+def generate_suspicious_dns_activity(num_queries=6, base_time=None):
+    """
+    Generate a list of suspicious DNS activity events.
+    - num_queries: Number of DNS queries to generate for one source IP.
+    - base_time: Base timestamp for the query burst.
+    """
+    events = []
+    ip = generate_ip(is_attack=True)
+    user = generate_user()
+    if base_time is None:
+        base_time = datetime.datetime.now()
+
+    for i in range(num_queries):
+        timestamp = int((base_time + datetime.timedelta(milliseconds=i * 250)).timestamp() * 1000)
+        token = ''.join(random.choice('abcdefghijklmnopqrstuvwxyz0123456789') for _ in range(18 + i))
+        query_name = f"{token}.exfil.example.com"
+        metadata = {
+            "protocol": "DNS",
+            "query_name": query_name,
+            "qtype": random.choice(["TXT", "NULL", "AAAA"]),
+            "rcode": random.choice(["NXDOMAIN", "SERVFAIL", "NOERROR"]),
+            "response_size": random.randint(48, 820),
+            "label_length": len(token),
+            "entropy": round(random.uniform(4.0, 5.5), 2),
+            "attempt": i + 1,
+        }
+        event = generate_event("DNS_QUERY", ip, user=user, target="dns_resolver", timestamp=timestamp, metadata=metadata)
+        events.append(event)
+    return events
+
+
 def main():
     parser = argparse.ArgumentParser(description="Generate simulated network activity logs in JSON format.")
     parser.add_argument("--output", default="Events.json", help="Output JSON file path (default: Events.json).")
@@ -121,6 +152,8 @@ def main():
     parser.add_argument("--attempts_per_attack", type=int, default=5, help="Failed attempts per attack.")
     parser.add_argument("--portscans", type=int, default=1, help="Number of port scan sequences to generate.")
     parser.add_argument("--ports_per_scan", type=int, default=30, help="Unique destination ports per port scan sequence.")
+    parser.add_argument("--dnsattacks", type=int, default=1, help="Number of suspicious DNS sequences to generate.")
+    parser.add_argument("--dns_queries_per_attack", type=int, default=6, help="DNS queries per suspicious DNS sequence.")
     args = parser.parse_args()
 
     base_time = datetime.datetime.now()
@@ -132,6 +165,8 @@ def main():
         events.extend(generate_attack_activity(args.attempts_per_attack, base_time))
     for _ in range(args.portscans):
         events.extend(generate_port_scan_activity(args.ports_per_scan, base_time))
+    for _ in range(args.dnsattacks):
+        events.extend(generate_suspicious_dns_activity(args.dns_queries_per_attack, base_time))
 
     # Sort by timestamp for realism
     events.sort(key=lambda e: e["timestamp"])

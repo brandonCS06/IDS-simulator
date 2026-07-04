@@ -155,9 +155,11 @@ def _normalize_event_like(raw: dict) -> dict:
     if meta is None:
         out["metadata"] = {}
     elif isinstance(meta, dict):
-        out["metadata"] = meta
+        out["metadata"] = dict(meta)
     else:
         raise ValueError("metadata must be a JSON object")
+
+    _merge_extra_metadata(out["metadata"], raw, {"timestamp", "source_ip", "user", "action", "target", "metadata"})
     return out
 
 
@@ -207,10 +209,30 @@ def _normalize_generic(raw: dict) -> dict:
     if meta is None:
         out["metadata"] = {}
     elif isinstance(meta, dict):
-        out["metadata"] = meta
+        out["metadata"] = dict(meta)
     else:
         raise ValueError("metadata must be a JSON object")
+
+    consumed = set()
+    for aliases in KEY_ALIASES.values():
+        consumed.update(aliases)
+    consumed.update({"timestamp", "source_ip", "user", "action", "target", "metadata"})
+    _merge_extra_metadata(out["metadata"], raw, consumed)
     return out
+
+
+def _merge_extra_metadata(metadata: dict, raw: dict, consumed_keys: set) -> None:
+    """
+    Preserve non-canonical top-level fields by folding them into metadata.
+
+    This allows raw DNS logs that expose fields like query_name or rcode at the
+    top level to survive normalization without changing the Event schema.
+    """
+    for key, value in raw.items():
+        if key in consumed_keys:
+            continue
+        if key not in metadata:
+            metadata[key] = value
 
 
 def _first_value(d: dict, keys: tuple):
