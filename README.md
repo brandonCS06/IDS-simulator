@@ -274,6 +274,13 @@ private static final long WINDOW_MS = 60_000; // Time window in milliseconds
 private static final int PORT_THRESHOLD = 30; // Port destination threshold
 ```
 
+In `SuspiciousDnsRule.java`, adjust:
+
+```java
+private static final long WINDOW_MS = 60_000; // Time window in milliseconds
+private static final int MIN_DNS_EVENTS = 5; // Minimum events needed to raise alerts
+private static final int SCORE_THRESHOLD = 8; // Suspicion threshold
+```
 
 ## Output Files
 
