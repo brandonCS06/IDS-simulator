@@ -271,15 +271,7 @@ In `PortScanRule.java`, adjust:
 
 ```java
 private static final long WINDOW_MS = 60_000; // Time window in milliseconds
-private static final int PORT_THRESHOLD = 30; // Port Destination Threshold
-```
-
-In `SuspiciousDnsRule.java`, adjust:
-
-```java
-private static final long WINDOW_MS = 60_000;
-private static final int MIN_DNS_EVENTS = 5;
-private static final int SCORE_THRESHOLD = 8;
+private static final int PORT_THRESHOLD = 30; // Port destination threshold
 ```
 
 
