@@ -22,6 +22,7 @@ The IDS Simulator is designed to:
 - **RuleEngineRules** - Interface for implementing custom threat detection rules
 - **BruteForceRule** - Detects brute force login attacks using a sliding time window with configurable thresholds
 - **PortScanRule** - Detects when a single source IP attempts to connect to 30+ different ports within a 60 second window
+- **IcmpSweepRule** - Detects when a single source host pings many different destination IPs within a short window
 - **SuspiciousDnsRule** - Detects suspicious DNS tunneling patterns using repeated high-entropy or failed DNS queries within a sliding window
 - **SlidingWindow** - Time-based event window (1-minute default) for tracking events by source IP and action type
 - **Event** - Canonical representation of a security event (timestamp, source IP, user, action, target, metadata)
@@ -101,6 +102,15 @@ python python/log_generator.py --output Events.json --dnsattacks 1 --dns_queries
 ```
 
 This adds DNS events with metadata such as `protocol`, `query_name`, `qtype`, `rcode`, `response_size`, `label_length`, and `entropy` so the SuspiciousDnsRule can evaluate them.
+
+To include ICMP sweep activity in the sample stream:
+
+```bash
+python python/log_generator.py --output Events.json --icmpsweeps 1 --icmp_targets_per_sweep 30
+```
+
+This adds ICMP echo request events with metadata such as `protocol`, `icmp_type`, and `destination_ip` so the IcmpSweepRule can evaluate them.
+
 #### Generate Report
 
 ```bash
@@ -111,8 +121,6 @@ Outputs a summary of alerts including:
 - Total alert count
 - Alerts by detection rule
 - Top attacking source IPs
-
-## Detection Rules
 
 ### Current Rules
 
@@ -129,6 +137,13 @@ Outputs a summary of alerts including:
 - **Threshold**: 30+ different ports
 - **Severity**: High
 - **Evidence**: The recent events from the same source IP showing 30+ unique destination ports within a 60-second window
+
+#### IcmpSweepRule
+- **Purpose**: Detects when a single source host pings 30+ distinct destination IPs within a 60-second window
+- **Window**: 1-minute sliding window
+- **Threshold**: 30+ different destination IPs
+- **Severity**: High
+- **Evidence**: The recent ICMP echo requests from the same source host showing 30+ unique destination IPs within a 60-second window
 
 #### SuspiciousDnsRule
 - **Purpose**: Detects suspicious DNS tunneling or exfiltration patterns by combining multiple DNS indicators over time
@@ -172,7 +187,7 @@ Events follow this JSON structure:
   "action": "LOGIN_SUCCESS",
   "target": "web_server",
   "metadata": {
-    "session_id": "abc123",
+        "session_id": "abc123",
         "duration_ms": 5000,
         "protocol": "DNS",
         "query_name": "token.exfil.example.com",
@@ -184,6 +199,8 @@ Events follow this JSON structure:
   }
 }
 ```
+
+ICMP sweep events should include `protocol: "ICMP"`, `icmp_type: 8`, and `destination_ip` in `metadata`.
 
 ## Alert Schema
 
@@ -214,6 +231,7 @@ IDS-simulator/
 │       ├── RuleEngineRules.java   # Rule interface
 │       ├── BruteForceRule.java    # Brute force detection
 |       ├── PortScanRule.java      # Port scan Detection
+│       ├── IcmpSweepRule.java     # ICMP sweep detection
 │       ├── Event.java             # Event model
 │       ├── Alert.java             # Alert model
 │       ├── AlertManager.java      # Alert collection
@@ -272,6 +290,13 @@ In `PortScanRule.java`, adjust:
 ```java
 private static final long WINDOW_MS = 60_000; // Time window in milliseconds
 private static final int PORT_THRESHOLD = 30; // Port destination threshold
+```
+
+In `IcmpSweepRule.java`, adjust:
+
+```java
+private static final long WINDOW_MS = 60_000; // Time window in milliseconds
+private static final int ICMP_THRESHOLD = 30;  // Unique destination IP threshold
 ```
 
 In `SuspiciousDnsRule.java`, adjust:

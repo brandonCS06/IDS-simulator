@@ -135,6 +135,26 @@ public class RuleEngineTest {
     }
 
     @Test
+    public void testIcmpSweepRuleTriggersAlert() {
+        engine.registerRule(new IcmpSweepRule());
+
+        List<Event> events = new ArrayList<>();
+        for (int i = 0; i < 30; i++) {
+            HashMap<String, Object> metadata = new HashMap<String, Object>();
+            metadata.put("protocol", "ICMP");
+            metadata.put("icmp_type", 8);
+            metadata.put("destination_ip", "198.51.100." + (i + 1));
+            events.add(new Event(1000L + (i * 200L), "10.0.0.5", "alice", "ICMP_ECHO_REQUEST", "icmp_probe", metadata));
+        }
+
+        List<Alert> alerts = engine.processEvent(events);
+
+        assertNotNull(alerts);
+        assertEquals(1, alerts.size());
+        assertEquals("IcmpSweepRule", alerts.get(0).getRule_name());
+    }
+
+    @Test
     public void testRulesEvaluatedPerEvent() {
         engine.registerRule(new BruteForceRule());
         
