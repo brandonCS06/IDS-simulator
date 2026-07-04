@@ -189,7 +189,7 @@ Events follow this JSON structure:
   "metadata": {
         "session_id": "abc123",
         "duration_ms": 5000,
-        "protocol": "DNS",
+        "protocol": "[Protocol Name]", //Ex: DNS, ICMP, etc. 
         "query_name": "token.exfil.example.com",
         "qtype": "TXT",
         "rcode": "NXDOMAIN",
@@ -200,7 +200,7 @@ Events follow this JSON structure:
 }
 ```
 
-ICMP sweep events should include `protocol: "ICMP"`, `icmp_type: 8`, and `destination_ip` in `metadata`.
+ICMP sweep events should include `icmp_type: 8`, and `destination_ip` in `metadata`.
 
 ## Alert Schema
 
