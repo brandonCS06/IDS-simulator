@@ -10,6 +10,11 @@ USERS = ["alice", "bob", "charlie", "diana", "eve"]
 ACTIONS = ["LOGIN_SUCCESS", "LOGIN_FAIL", "ACCESS_GRANTED", "ACCESS_DENIED"]
 TARGETS = ["web_server", "database", "file_system", "api_gateway"]
 
+
+def generate_icmp_destination_ip(index):
+    """Generate a unique destination IP for ICMP sweep traffic."""
+    return f"198.51.100.{(index % 250) + 1}"
+
 def generate_timestamp(base_time=None, max_offset_seconds=3600):
     """
     Generate a timestamp in epoch milliseconds.
@@ -144,6 +149,32 @@ def generate_suspicious_dns_activity(num_queries=6, base_time=None):
     return events
 
 
+def generate_icmp_sweep_activity(num_targets=30, base_time=None):
+    """
+    Generate a list of ICMP sweep activity events.
+    - num_targets: Number of unique destination IPs to ping.
+    - base_time: Base timestamp for the sweep.
+    """
+    events = []
+    ip = generate_ip(is_attack=True)
+    user = generate_user()
+    if base_time is None:
+        base_time = datetime.datetime.now()
+
+    for i in range(num_targets):
+        timestamp = int((base_time + datetime.timedelta(milliseconds=i * 200)).timestamp() * 1000)
+        destination_ip = generate_icmp_destination_ip(i)
+        metadata = {
+            "protocol": "ICMP",
+            "icmp_type": 8,
+            "destination_ip": destination_ip,
+            "attempt": i + 1,
+        }
+        event = generate_event("ICMP_ECHO_REQUEST", ip, user=user, target="icmp_probe", timestamp=timestamp, metadata=metadata)
+        events.append(event)
+    return events
+
+
 def main():
     parser = argparse.ArgumentParser(description="Generate simulated network activity logs in JSON format.")
     parser.add_argument("--output", default="Events.json", help="Output JSON file path (default: Events.json).")
@@ -154,6 +185,8 @@ def main():
     parser.add_argument("--ports_per_scan", type=int, default=30, help="Unique destination ports per port scan sequence.")
     parser.add_argument("--dnsattacks", type=int, default=1, help="Number of suspicious DNS sequences to generate.")
     parser.add_argument("--dns_queries_per_attack", type=int, default=6, help="DNS queries per suspicious DNS sequence.")
+    parser.add_argument("--icmpsweeps", type=int, default=1, help="Number of ICMP sweep sequences to generate.")
+    parser.add_argument("--icmp_targets_per_sweep", type=int, default=30, help="Unique destination IPs per ICMP sweep sequence.")
     args = parser.parse_args()
 
     base_time = datetime.datetime.now()
@@ -167,6 +200,8 @@ def main():
         events.extend(generate_port_scan_activity(args.ports_per_scan, base_time))
     for _ in range(args.dnsattacks):
         events.extend(generate_suspicious_dns_activity(args.dns_queries_per_attack, base_time))
+    for _ in range(args.icmpsweeps):
+        events.extend(generate_icmp_sweep_activity(args.icmp_targets_per_sweep, base_time))
 
     # Sort by timestamp for realism
     events.sort(key=lambda e: e["timestamp"])
