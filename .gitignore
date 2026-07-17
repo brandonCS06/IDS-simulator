@@ -16,9 +16,14 @@ Thumbs.db
 # Log files
 *.log
 
+# Python caches
+__pycache__/
+*.pyc
+
 # Local data files
 Alerts.json
 Events.json
+demo-output/
 
 # XML files
 *.xml
