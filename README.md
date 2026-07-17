@@ -97,6 +97,9 @@ demo-output/report.html
 
 The script prints the HTML report path when it finishes. Open
 `demo-output/report.html` in a browser to review the alert dashboard.
+Existing demo artifacts are replaced on each run, and the default event
+generation uses fresh randomness/current time so the report changes between
+runs.
 
 You can run a specific scenario:
 
@@ -110,6 +113,12 @@ You can also pass custom built-in rule thresholds:
 
 ```bash
 python python/demo.py --rules rules.example.json
+```
+
+For a reproducible demo run, pass a seed and optional fixed base time:
+
+```bash
+python python/demo.py --seed 42 --base-time 2026-07-15T12:00:00Z
 ```
 
 Custom Java rules still use the normal project workflow: implement the rule,
