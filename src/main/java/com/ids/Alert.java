@@ -1,6 +1,7 @@
 package com.ids;
 
 import java.util.List;
+import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -20,6 +21,9 @@ public class Alert implements Comparable<Alert> {
     private String severity;
     private List<Event> evidence;
     private String source_ip;
+    private String description;
+    private String recommendation;
+    private Map<String, Object> metrics;
 
 
     /**
@@ -42,11 +46,42 @@ public class Alert implements Comparable<Alert> {
      */
     public Alert (long timestamp, String rule_name, String severity, List<Event> evidence, String source_ip)
     {
+        this(timestamp, rule_name, severity, evidence, source_ip, null, null, null);
+    }
+
+    /**
+     * Construct a new alert with human-readable context and computed
+     * detection metrics. These optional fields make JSON output easier
+     * to explain in demos and reports while preserving the original schema.
+     *
+     * @param timestamp      the time the alert was raised (epoch millis)
+     * @param rule_name      the name/identifier of the rule that triggered
+     * @param severity       normalized severity string (e.g. low/med/high)
+     * @param evidence       list of events that caused or support the alert
+     * @param source_ip      IP address this alert is attributed to
+     * @param description    short explanation of why the rule fired
+     * @param recommendation analyst-facing follow-up or learning note
+     * @param metrics        computed values that support the alert
+     */
+    public Alert (
+        long timestamp,
+        String rule_name,
+        String severity,
+        List<Event> evidence,
+        String source_ip,
+        String description,
+        String recommendation,
+        Map<String, Object> metrics
+    )
+    {
         this.timestamp = timestamp;
         this.rule_name = rule_name;
         this.severity = severity;
         this.evidence = evidence;
         this.source_ip = source_ip;
+        this.description = description;
+        this.recommendation = recommendation;
+        this.metrics = metrics;
     }
 
     public long getTimestamp()
@@ -72,6 +107,21 @@ public class Alert implements Comparable<Alert> {
     public String getSource_ip()
     {
         return source_ip;
+    }
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public String getRecommendation()
+    {
+        return recommendation;
+    }
+
+    public Map<String, Object> getMetrics()
+    {
+        return metrics;
     }
 
     /**

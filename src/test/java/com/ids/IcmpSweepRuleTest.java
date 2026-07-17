@@ -95,6 +95,12 @@ public class IcmpSweepRuleTest {
                 assertEquals("10.0.0.5", alert.getSource_ip());
                 assertNotNull(alert.getEvidence());
                 assertTrue(alert.getEvidence().size() >= ICMP_SWEEP_THRESHOLD);
+                assertNotNull(alert.getDescription());
+                assertTrue(alert.getDescription().contains("ICMP echo requests"));
+                assertNotNull(alert.getRecommendation());
+                assertNotNull(alert.getMetrics());
+                assertEquals(Integer.valueOf(ICMP_SWEEP_THRESHOLD), alert.getMetrics().get("unique_destination_ips"));
+                assertEquals(Integer.valueOf(ICMP_SWEEP_THRESHOLD), alert.getMetrics().get("threshold"));
             }
         }
     }

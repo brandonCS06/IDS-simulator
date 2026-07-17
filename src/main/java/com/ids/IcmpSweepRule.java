@@ -52,12 +52,27 @@ public class IcmpSweepRule implements RuleEngineRules {
         }
 
         if (uniqueDestinationIps.size() >= ICMP_THRESHOLD) {
+            Map<String, Object> metrics = new HashMap<String, Object>();
+            metrics.put("unique_destination_ips", Integer.valueOf(uniqueDestinationIps.size()));
+            metrics.put("threshold", Integer.valueOf(ICMP_THRESHOLD));
+            metrics.put("window_ms", Long.valueOf(WINDOW_MS));
+            metrics.put("window_seconds", Long.valueOf(WINDOW_MS / 1000));
+            metrics.put("icmp_type", Integer.valueOf(ICMP_ECHO_REQUEST_TYPE));
+
+            String description = "Source " + sourceIp + " sent ICMP echo requests to "
+                + uniqueDestinationIps.size() + " unique destination IPs within "
+                + (WINDOW_MS / 1000) + " seconds, which suggests network sweep reconnaissance.";
+            String recommendation = "Confirm whether this is expected monitoring or discovery traffic; unexpected sweeps should be investigated as reconnaissance.";
+
             Alert alert = new Alert(
                 event.getTimestamp(),
                 ruleName,
                 severity,
                 new ArrayList<Event>(history),
-                sourceIp
+                sourceIp,
+                description,
+                recommendation,
+                metrics
             );
             return Collections.singletonList(alert);
         }

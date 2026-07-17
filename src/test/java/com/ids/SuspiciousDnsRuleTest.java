@@ -81,6 +81,13 @@ public class SuspiciousDnsRuleTest {
                 assertEquals("10.0.0.5", alert.getSource_ip());
                 assertNotNull(alert.getEvidence());
                 assertTrue(alert.getEvidence().size() >= EVENT_THRESHOLD);
+                assertNotNull(alert.getDescription());
+                assertTrue(alert.getDescription().contains("suspicious DNS events"));
+                assertNotNull(alert.getRecommendation());
+                assertNotNull(alert.getMetrics());
+                assertEquals(Integer.valueOf(EVENT_THRESHOLD), alert.getMetrics().get("dns_event_count"));
+                assertTrue(((Integer) alert.getMetrics().get("score")).intValue() >= 8);
+                assertNotNull(alert.getMetrics().get("indicators"));
             }
         }
     }

@@ -34,6 +34,34 @@ public class AlertTest {
         assertEquals("192.168.1.1", alert.getSource_ip());
         assertNotNull(alert.getEvidence());
         assertEquals(2, alert.getEvidence().size());
+        assertNull(alert.getDescription());
+        assertNull(alert.getRecommendation());
+        assertNull(alert.getMetrics());
+    }
+
+    @Test
+    public void testAlertWithExplanationAndMetrics() {
+        HashMap<String, Object> metrics = new HashMap<String, Object>();
+        metrics.put("failed_login_count", Integer.valueOf(5));
+        metrics.put("threshold", Integer.valueOf(5));
+
+        Alert richAlert = new Alert(
+            1500L,
+            "BruteForceRule",
+            "high",
+            evidence,
+            "192.168.1.1",
+            "Source crossed the failed login threshold.",
+            "Review authentication logs.",
+            metrics
+        );
+
+        assertEquals("Source crossed the failed login threshold.", richAlert.getDescription());
+        assertEquals("Review authentication logs.", richAlert.getRecommendation());
+        assertNotNull(richAlert.getMetrics());
+        assertEquals(Integer.valueOf(5), richAlert.getMetrics().get("failed_login_count"));
+        assertTrue(richAlert.toJson().contains("description"));
+        assertTrue(richAlert.toJson().contains("metrics"));
     }
 
     @Test

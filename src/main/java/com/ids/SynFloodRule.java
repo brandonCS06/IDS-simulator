@@ -53,13 +53,38 @@ public class SynFloodRule implements RuleEngineRules {
         if (synCount >= SYN_THRESHOLD && synCount >= MIN_SYN_FOR_RATIO) {
             double ackRatio = (double) ackCount / (double) Math.max(1, synCount);
             if (ackRatio < MAX_ACK_RATIO) {
+                String destinationIp = normalizeKeyPart(getMetadataString(event, "destination_ip"));
+                Integer destinationPort = event.getDestinationPort();
+
+                Map<String, Object> metrics = new HashMap<String, Object>();
+                metrics.put("syn_count", Integer.valueOf(synCount));
+                metrics.put("ack_count", Integer.valueOf(ackCount));
+                metrics.put("ack_ratio", Double.valueOf(ackRatio));
+                metrics.put("max_ack_ratio", Double.valueOf(MAX_ACK_RATIO));
+                metrics.put("syn_threshold", Integer.valueOf(SYN_THRESHOLD));
+                metrics.put("window_ms", Long.valueOf(WINDOW_MS));
+                metrics.put("window_seconds", Long.valueOf(WINDOW_MS / 1000));
+                metrics.put("destination_ip", destinationIp);
+                metrics.put("destination_port", destinationPort == null ? "*" : destinationPort);
+
+                String description = "Source " + event.getSource_ip() + " sent " + synCount
+                    + " TCP SYN packets toward " + destinationIp + ":"
+                    + (destinationPort == null ? "*" : destinationPort.toString())
+                    + " in " + (WINDOW_MS / 1000) + " seconds, but only " + ackCount
+                    + " ACK packets were observed. The ACK ratio was " + ackRatio
+                    + ", below the allowed " + MAX_ACK_RATIO + ".";
+                String recommendation = "Review TCP handshake completion for this flow; many SYNs with few ACKs can indicate half-open connection flooding.";
+
                 return Collections.singletonList(
                     new Alert(
                         event.getTimestamp(),
                         ruleName,
                         severity,
                         new ArrayList<Event>(history),
-                        event.getSource_ip()
+                        event.getSource_ip(),
+                        description,
+                        recommendation,
+                        metrics
                     )
                 );
             }

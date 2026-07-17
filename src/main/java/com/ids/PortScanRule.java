@@ -40,12 +40,26 @@ public class PortScanRule implements RuleEngineRules {
         }
 
         if (uniquePorts.size() >= PORT_THRESHOLD) {
+            Map<String, Object> metrics = new HashMap<String, Object>();
+            metrics.put("unique_destination_ports", Integer.valueOf(uniquePorts.size()));
+            metrics.put("threshold", Integer.valueOf(PORT_THRESHOLD));
+            metrics.put("window_ms", Long.valueOf(WINDOW_MS));
+            metrics.put("window_seconds", Long.valueOf(WINDOW_MS / 1000));
+
+            String description = "Source " + sourceIp + " contacted " + uniquePorts.size()
+                + " unique destination ports within " + (WINDOW_MS / 1000)
+                + " seconds, which matches horizontal or vertical port scan behavior.";
+            String recommendation = "Check whether this source is an approved scanner; otherwise investigate the host and consider blocking repeated probes.";
+
             Alert alert = new Alert(
                 event.getTimestamp(),
                 ruleName,
                 severity,
                 new ArrayList<Event>(history),
-                sourceIp
+                sourceIp,
+                description,
+                recommendation,
+                metrics
             );
             return Collections.singletonList(alert);
         }

@@ -8,8 +8,8 @@ The IDS Simulator is designed to:
 - **Simulate realistic network activity** with normal and attack patterns
 - **Process security events** in real-time against detection rules
 - **Detect threats** using rule-based analysis (e.g., brute force attacks)
-- **Generate alerts** with evidence-based findings
-- **Report findings** with summary statistics and threat analysis
+- **Generate alerts** with evidence, plain-English explanations, recommendations, and computed metrics
+- **Report findings** with summary statistics, alert details, and exportable text/JSON/CSV/HTML output
 
 ## Architecture
 
@@ -27,28 +27,33 @@ The IDS Simulator is designed to:
 - **SynFloodRule** - Detects SYN flood patterns by tracking bursty TCP SYN traffic with low ACK completion over a short sliding window
 - **SlidingWindow** - Time-based event window (1-minute default) for tracking events by source IP and action type
 - **Event** - Canonical representation of a security event (timestamp, source IP, user, action, target, metadata)
-- **Alert** - Generated when a rule detects suspicious activity; includes severity, rule name, and supporting evidence
+- **Alert** - Generated when a rule detects suspicious activity; includes severity, rule name, supporting evidence, explanation text, analyst recommendations, and computed metrics
 - **AlertManager** - Manages alert collection and exports to JSON format
 
 #### Python Utilities (`python/`)
 
 - **log_generator.py** - Generates synthetic security events with configurable normal and attack traffic patterns
 - **log_parser.py** - Parses raw logs into the standardized Event format
-- **report_generator.py** - Summarizes alerts with statistics by rule, source IP, and top attackers
+- **report_generator.py** - Summarizes alerts with statistics by rule, source IP, top attackers, alert explanations, metrics, and optional HTML output
 
 ### Data Flow
 
 ```
 Events.json (input)
-    ↓
+    |
+    v
 IDSCore.loadEvents()
-    ↓
+    |
+    v
 RuleEngine.processEvent() [runs each event through all rules]
-    ↓
+    |
+    v
 [Insert Rule Name].onEvent() [evaluates against detection logic]
-    ↓
+    |
+    v
 AlertManager [accumulates alerts]
-    ↓
+    |
+    v
 Alerts.json (output) + Report
 ```
 
@@ -153,13 +158,17 @@ Outputs a summary of alerts including:
 - Top attacking source IPs
 - Top targets
 - Alert counts by time window
+- Example alert details with `description`, `recommendation`, and `metrics`
 
 Reports can also be exported for automation:
 
 ```bash
 python python/report_generator.py --format json --output report.json
 python python/report_generator.py --format csv --output report.csv
+python python/report_generator.py --format html --output report.html
 ```
+
+The HTML report is useful for demos because it turns `Alerts.json` into a readable dashboard with summary cards, breakdown tables, and alert cards that explain why each rule fired.
 
 ### Current Rules
 
@@ -169,6 +178,7 @@ python python/report_generator.py --format csv --output report.csv
 - **Threshold**: 5+ failed login events
 - **Severity**: High
 - **Evidence**: List of failed login events that triggered the alert
+- **Metrics**: Failed login count, threshold, and detection window
 
 #### PortScanRule
 - **Purpose**: Detects when a single source IP attempts to connect to 30+ different ports within a 60-second window
@@ -176,6 +186,7 @@ python python/report_generator.py --format csv --output report.csv
 - **Threshold**: 30+ different ports
 - **Severity**: High
 - **Evidence**: The recent events from the same source IP showing 30+ unique destination ports within a 60-second window
+- **Metrics**: Unique destination port count, threshold, and detection window
 
 #### IcmpSweepRule
 - **Purpose**: Detects when a single source host pings 30+ distinct destination IPs within a 60-second window
@@ -183,6 +194,7 @@ python python/report_generator.py --format csv --output report.csv
 - **Threshold**: 30+ different destination IPs
 - **Severity**: High
 - **Evidence**: The recent ICMP echo requests from the same source host showing 30+ unique destination IPs within a 60-second window
+- **Metrics**: Unique destination IP count, ICMP type, threshold, and detection window
 
 #### SuspiciousDnsRule
 - **Purpose**: Detects suspicious DNS tunneling or exfiltration patterns by combining multiple DNS indicators over time
@@ -190,6 +202,7 @@ python python/report_generator.py --format csv --output report.csv
 - **Indicators**: long query names, high entropy, suspicious qtypes such as TXT or NULL, failed DNS responses such as NXDOMAIN or SERVFAIL, and unusually large responses
 - **Severity**: High
 - **Evidence**: DNS events from the same source IP within the detection window
+- **Metrics**: DNS event count, suspicion score, score threshold, detection window, and matched indicators
 
 #### SynFloodRule
 - **Purpose**: Detects likely SYN flood behavior from a source to a destination tuple
@@ -197,6 +210,7 @@ python python/report_generator.py --format csv --output report.csv
 - **Threshold**: 60+ SYN packets with ACK ratio below 0.20
 - **Severity**: High
 - **Evidence**: TCP events from the same source/destination tuple within the detection window
+- **Metrics**: SYN count, ACK count, ACK ratio, destination IP/port, threshold, and detection window
 
 ### Adding Custom Rules
 
@@ -258,36 +272,46 @@ Generated alerts include:
   "rule_name": "BruteForceRule",
   "severity": "high",
   "source_ip": "10.0.0.5",
+  "description": "Source 10.0.0.5 produced 5 failed login attempts within 60 seconds, meeting the brute-force threshold of 5.",
+  "recommendation": "Review authentication logs for the source IP, verify whether the user activity is legitimate, and consider rate limiting or temporary blocking.",
+  "metrics": {
+    "failed_login_count": 5,
+    "threshold": 5,
+    "window_ms": 60000,
+    "window_seconds": 60
+  },
   "evidence": [...]
 }
 ```
+
+The exact `metrics` fields depend on the rule. For example, `SynFloodRule` includes `syn_count`, `ack_count`, `ack_ratio`, `destination_ip`, and `destination_port`, while `SuspiciousDnsRule` includes `score` and `indicators`.
 
 ## Project Structure
 
 ```
 IDS-simulator/
-├── pom.xml                    # Maven project configuration
-├── Alerts.json               # Generated alerts output
-├── Events.json               # Input events
-├── README.md                 # This file
-├── src/
-│   └── main/java/com/ids/
-│       ├── IDSCore.java          # Main orchestrator
-│       ├── RuleEngine.java        # Rule evaluation engine
-│       ├── RuleEngineRules.java   # Rule interface
-│       ├── BruteForceRule.java    # Brute force detection
-|       ├── PortScanRule.java      # Port scan Detection
-│       ├── IcmpSweepRule.java     # ICMP sweep detection
-|       ├── SynFloodRule.java      # SYN flood detection
-│       ├── Event.java             # Event model
-│       ├── Alert.java             # Alert model
-│       ├── AlertManager.java      # Alert collection
-│       ├── SlidingWindow.java     # Time-based event window
-|       ├── SuspiciousDnsRule.java # DNS tunneling detection
-└── python/
-    ├── log_generator.py       # Synthetic event generation
-    ├── log_parser.py          # Raw log parsing
-    └── report_generator.py    # Alert report generation
+|-- pom.xml                     # Maven project configuration
+|-- Alerts.json                 # Generated alerts output
+|-- Events.json                 # Input events
+|-- README.md                   # This file
+|-- src/
+|   `-- main/java/com/ids/
+|       |-- IDSCore.java           # Main orchestrator
+|       |-- RuleEngine.java        # Rule evaluation engine
+|       |-- RuleEngineRules.java   # Rule interface
+|       |-- BruteForceRule.java    # Brute force detection
+|       |-- PortScanRule.java      # Port scan detection
+|       |-- IcmpSweepRule.java     # ICMP sweep detection
+|       |-- SynFloodRule.java      # SYN flood detection
+|       |-- Event.java             # Event model
+|       |-- Alert.java             # Alert model
+|       |-- AlertManager.java      # Alert collection
+|       |-- SlidingWindow.java     # Time-based event window
+|       `-- SuspiciousDnsRule.java # DNS tunneling detection
+`-- python/
+    |-- log_generator.py        # Synthetic event generation
+    |-- log_parser.py           # Raw log parsing
+    `-- report_generator.py     # Alert report generation
 ```
 
 ## Dependencies
@@ -311,6 +335,9 @@ java -cp "target/classes:$HOME/.m2/repository/com/google/code/gson/gson/2.10.1/g
 
 # Generate a report
 python python/report_generator.py
+
+# Generate a demo-friendly HTML report
+python python/report_generator.py --format html --output report.html
 ```
 
 ### Example 2: Process Custom Events
@@ -327,6 +354,12 @@ java -cp "target/classes:$HOME/.m2/repository/com/google/code/gson/gson/2.10.1/g
 python python/log_parser.py --input raw-events.csv --format csv --output Events.json
 java -cp "target/classes:$HOME/.m2/repository/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar" com.ids.IDSCore Events.json
 python python/report_generator.py --format json --output report.json
+```
+
+On Windows PowerShell, use `;` instead of `:` in the Java classpath:
+
+```powershell
+java -cp "target/classes;$env:USERPROFILE\.m2\repository\com\google\code\gson\gson\2.10.1\gson-2.10.1.jar" com.ids.IDSCore Events.json
 ```
 
 ## Configuration
@@ -404,7 +437,7 @@ private static final double MAX_ACK_RATIO = 0.20d; // Maximum ACK-to-SYN ratio a
 
 - **Alerts.json** - Complete alert data with evidence
 - **Events.json** - Normalized input events for the Java IDS
-- Optional **report.json** or **report.csv** from the Python reporter
+- Optional **report.json**, **report.csv**, or **report.html** from the Python reporter
 - Console output with processing statistics
 
 ## Testing
