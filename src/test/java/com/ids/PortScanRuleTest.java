@@ -69,6 +69,12 @@ public class PortScanRuleTest {
                 assertEquals("PortScanRule", alert.getRule_name());
                 assertEquals("high", alert.getSeverity());
                 assertEquals("192.168.1.1", alert.getSource_ip());
+                assertNotNull(alert.getDescription());
+                assertTrue(alert.getDescription().contains("unique destination ports"));
+                assertNotNull(alert.getRecommendation());
+                assertNotNull(alert.getMetrics());
+                assertEquals(Integer.valueOf(PORT_THRESHOLD), alert.getMetrics().get("unique_destination_ports"));
+                assertEquals(Integer.valueOf(PORT_THRESHOLD), alert.getMetrics().get("threshold"));
             }
         }
     }

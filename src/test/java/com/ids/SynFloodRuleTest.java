@@ -68,6 +68,14 @@ public class SynFloodRuleTest {
         assertEquals("SynFloodRule", alerts.get(0).getRule_name());
         assertEquals("high", alerts.get(0).getSeverity());
         assertEquals("10.0.0.5", alerts.get(0).getSource_ip());
+        assertNotNull(alerts.get(0).getDescription());
+        assertTrue(alerts.get(0).getDescription().contains("TCP SYN packets"));
+        assertNotNull(alerts.get(0).getRecommendation());
+        assertNotNull(alerts.get(0).getMetrics());
+        assertEquals(Integer.valueOf(SYN_THRESHOLD), alerts.get(0).getMetrics().get("syn_count"));
+        assertEquals(Integer.valueOf(0), alerts.get(0).getMetrics().get("ack_count"));
+        assertEquals("198.51.100.20", alerts.get(0).getMetrics().get("destination_ip"));
+        assertEquals(Integer.valueOf(443), alerts.get(0).getMetrics().get("destination_port"));
     }
 
     @Test

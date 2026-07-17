@@ -63,6 +63,12 @@ public class BruteForceRuleTest {
                 assertEquals("BruteForceRule", alert.getRule_name());
                 assertEquals("high", alert.getSeverity());
                 assertEquals("192.168.1.1", alert.getSource_ip());
+                assertNotNull(alert.getDescription());
+                assertTrue(alert.getDescription().contains("failed login attempts"));
+                assertNotNull(alert.getRecommendation());
+                assertNotNull(alert.getMetrics());
+                assertEquals(Integer.valueOf(THRESHOLD), alert.getMetrics().get("failed_login_count"));
+                assertEquals(Integer.valueOf(THRESHOLD), alert.getMetrics().get("threshold"));
             }
         }
     }
