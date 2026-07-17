@@ -8,8 +8,6 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_OUTPUT_DIR = "demo-output"
-DEFAULT_SEED = 42
-DEFAULT_BASE_TIME = "2026-07-15T12:00:00Z"
 DEFAULT_TOP_N = 5
 GSON_VERSION = "2.10.1"
 
@@ -104,8 +102,8 @@ def java_classpath(home: Path | None = None) -> str:
 def build_generator_command(
     events_path: Path,
     scenario: str,
-    seed: int,
-    base_time: str,
+    seed: int | None,
+    base_time: str | None,
     verbose: bool = False,
 ) -> list[str]:
     command = [
@@ -115,11 +113,12 @@ def build_generator_command(
         str(events_path),
         "--output_format",
         "json",
-        "--seed",
-        str(seed),
-        "--base_time",
-        base_time,
     ]
+
+    if seed is not None:
+        command.extend(["--seed", str(seed)])
+    if base_time is not None:
+        command.extend(["--base_time", base_time])
 
     for key, value in scenario_options(scenario).items():
         command.extend([f"--{key}", str(value)])
@@ -191,6 +190,12 @@ def run_command(command: list[str], label: str, cwd: Path) -> None:
     subprocess.run(command, cwd=str(cwd), check=True, stderr=subprocess.STDOUT)
 
 
+def remove_stale_artifacts(paths: list[Path]) -> None:
+    for path in paths:
+        if path.exists():
+            path.unlink()
+
+
 def run_demo(args: argparse.Namespace) -> int:
     output_dir = project_relative_path(args.output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -199,6 +204,7 @@ def run_demo(args: argparse.Namespace) -> int:
     alerts_path = output_dir / "Alerts.json"
     report_path = output_dir / "report.html"
     rules_path = resolve_rules_path(args.rules)
+    remove_stale_artifacts([events_path, alerts_path, report_path])
 
     generator_command = build_generator_command(
         events_path,
@@ -253,8 +259,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--scenario", choices=SCENARIOS, default="all", help="Demo scenario to generate.")
     parser.add_argument("--rules", help="Optional JSON rule config path for built-in rule thresholds.")
     parser.add_argument("--output-dir", default=DEFAULT_OUTPUT_DIR, help="Directory for demo artifacts.")
-    parser.add_argument("--seed", type=int, default=DEFAULT_SEED, help="Seed for reproducible event generation.")
-    parser.add_argument("--base-time", default=DEFAULT_BASE_TIME, help="UTC ISO-8601 base time for generated events.")
+    parser.add_argument("--seed", type=int, help="Seed for reproducible event generation. Defaults to fresh random output each run.")
+    parser.add_argument("--base-time", help="UTC ISO-8601 base time for generated events. Defaults to the current time.")
     parser.add_argument("--top-n", type=int, default=DEFAULT_TOP_N, help="Number of alert examples/top values in report.")
     parser.add_argument("--skip-compile", action="store_true", help="Skip mvn compile for faster reruns.")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose generator/report logging.")
