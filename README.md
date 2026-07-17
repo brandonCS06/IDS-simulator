@@ -58,7 +58,7 @@ Alerts.json (output) + Report
 
 - **Java**: JDK 8 or later
 - **Maven**: 3.6+ for building
-- **Python**: 3.x for log generation and reporting utilities
+- **Python**: 3.11+ for log generation, parsing, reporting, and tests
 
 ### Building
 
@@ -72,7 +72,7 @@ mvn package
 #### Basic Usage
 
 ```bash
-java -cp target/classes com.ids.IDSCore Events.json
+java -cp "target/classes:$HOME/.m2/repository/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar" com.ids.IDSCore Events.json
 ```
 
 This will:
@@ -83,7 +83,7 @@ This will:
 #### With Custom Event File
 
 ```bash
-java -cp target/classes com.ids.IDSCore path/to/events.json
+java -cp "target/classes:$HOME/.m2/repository/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar" com.ids.IDSCore path/to/events.json
 ```
 
 ### Python Utilities
@@ -91,10 +91,12 @@ java -cp target/classes com.ids.IDSCore path/to/events.json
 #### Generate Synthetic Events
 
 ```bash
-python python/log_generator.py --output Events.json --count 1000
+python python/log_generator.py --output Events.json --normal 1000 --seed 42
 ```
 
-Generates events with a mix of normal activity and attack patterns.
+Generates events with a mix of normal activity and attack patterns. `--seed`
+makes the same simulation reproducible for demos and tests. The legacy
+`--count` flag is still supported as an alias for `--normal`.
 
 To include suspicious DNS activity in the sample stream:
 
@@ -119,6 +121,24 @@ python python/log_generator.py --output Events.json --synfloods 1 --syn_packets_
 ```
 
 This adds TCP SYN burst events (with sparse ACK completion) using metadata such as `protocol`, `destination_ip`, `destination_port`, `tcp_flags`, `syn`, and `ack` so the SynFloodRule can evaluate them.
+The generator can also write JSON Lines or CSV for inspection and parser testing:
+
+```bash
+python python/log_generator.py --output sample-events.jsonl --output_format jsonl --seed 42
+python python/log_generator.py --output sample-events.csv --output_format csv --seed 42
+```
+
+#### Normalize Raw Logs
+
+```bash
+python python/log_parser.py --input sample-events.jsonl --format jsonl --output Events.json
+python python/log_parser.py --input sample-events.csv --format csv --output Events.json
+```
+
+The parser accepts `json`, `events-json`, `jsonl`, and `csv` input, validates
+source and destination IP addresses with Python's `ipaddress` module, accepts
+epoch-millisecond or ISO-8601 timestamps, and writes the Java-compatible
+`Events.json` array.
 
 #### Generate Report
 
@@ -129,7 +149,17 @@ python python/report_generator.py
 Outputs a summary of alerts including:
 - Total alert count
 - Alerts by detection rule
+- Alerts by severity
 - Top attacking source IPs
+- Top targets
+- Alert counts by time window
+
+Reports can also be exported for automation:
+
+```bash
+python python/report_generator.py --format json --output report.json
+python python/report_generator.py --format csv --output report.csv
+```
 
 ### Current Rules
 
@@ -271,13 +301,13 @@ IDS-simulator/
 
 ```bash
 # Generate synthetic events
-python python/log_generator.py --output Events.json --count 500
+python python/log_generator.py --output Events.json --normal 500 --seed 42
 
 # Compile the Java project
 mvn clean compile
 
 # Run the IDS
-java -cp target/classes com.ids.IDSCore Events.json
+java -cp "target/classes:$HOME/.m2/repository/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar" com.ids.IDSCore Events.json
 
 # Generate a report
 python python/report_generator.py
@@ -288,10 +318,44 @@ python python/report_generator.py
 Place your `Events.json` file in the project root and run:
 
 ```bash
-java -cp target/classes com.ids.IDSCore Events.json
+java -cp "target/classes:$HOME/.m2/repository/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar" com.ids.IDSCore Events.json
+```
+
+### Example 3: Parse CSV or JSONL Logs Before Running IDS
+
+```bash
+python python/log_parser.py --input raw-events.csv --format csv --output Events.json
+java -cp "target/classes:$HOME/.m2/repository/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar" com.ids.IDSCore Events.json
+python python/report_generator.py --format json --output report.json
 ```
 
 ## Configuration
+
+### Python Simulation Settings
+
+The generator accepts TOML or JSON config files for repeatable lab runs:
+
+```toml
+output = "Events.json"
+output_format = "json"
+normal = 500
+attacks = 2
+attempts_per_attack = 5
+portscans = 1
+ports_per_scan = 30
+dnsattacks = 1
+dns_queries_per_attack = 6
+icmpsweeps = 1
+icmp_targets_per_sweep = 30
+seed = 42
+base_time = "2026-07-15T12:00:00Z"
+```
+
+Run it with:
+
+```bash
+python python/log_generator.py --config simulation.toml
+```
 
 ### Brute Force Rule Settings
 
@@ -336,7 +400,16 @@ private static final double MAX_ACK_RATIO = 0.20d; // Maximum ACK-to-SYN ratio a
 ## Output Files
 
 - **Alerts.json** - Complete alert data with evidence
+- **Events.json** - Normalized input events for the Java IDS
+- Optional **report.json** or **report.csv** from the Python reporter
 - Console output with processing statistics
+
+## Testing
+
+```bash
+python -m unittest discover -s tests
+mvn test
+```
 
 ## Future Potential Enhancements
 
@@ -353,4 +426,3 @@ Read License.md
 ## Author
 
 Developed by Brandon Le, Computer Science Student at Rutgers University - New Brunswick.
-
