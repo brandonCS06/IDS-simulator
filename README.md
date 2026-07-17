@@ -347,6 +347,9 @@ dnsattacks = 1
 dns_queries_per_attack = 6
 icmpsweeps = 1
 icmp_targets_per_sweep = 30
+synfloods = 1
+syn_packets_per_flood = 80
+acks_per_flood = 5
 seed = 42
 base_time = "2026-07-15T12:00:00Z"
 ```
@@ -407,7 +410,6 @@ private static final double MAX_ACK_RATIO = 0.20d; // Maximum ACK-to-SYN ratio a
 ## Testing
 
 ```bash
-python -m unittest discover -s tests
 mvn test
 ```
 
