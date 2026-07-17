@@ -296,6 +296,7 @@ Then register in `IDSCore`:
 ```java
 ruleEngine.registerRule(new CustomRule());
 ```
+For threshold configurations, register them in `rules.example.json`
 
 ## Event Schema
 
