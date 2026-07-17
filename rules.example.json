@@ -1,0 +1,25 @@
+{
+  "brute_force": {
+    "window_ms": 60000,
+    "threshold": 5
+  },
+  "port_scan": {
+    "window_ms": 60000,
+    "port_threshold": 30
+  },
+  "suspicious_dns": {
+    "window_ms": 60000,
+    "minimum_dns_events": 5,
+    "score_threshold": 8
+  },
+  "syn_flood": {
+    "window_ms": 10000,
+    "syn_threshold": 60,
+    "minimum_syn_for_ratio": 30,
+    "max_ack_ratio": 0.2
+  },
+  "icmp_sweep": {
+    "window_ms": 60000,
+    "icmp_threshold": 30
+  }
+}
