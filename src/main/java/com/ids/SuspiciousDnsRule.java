@@ -40,13 +40,31 @@ public class SuspiciousDnsRule implements RuleEngineRules {
         }
 
         if (history.size() >= MIN_DNS_EVENTS && totalScore >= SCORE_THRESHOLD && indicators.size() >= 2) {
+            Map<String, Object> metrics = new HashMap<String, Object>();
+            metrics.put("dns_event_count", Integer.valueOf(history.size()));
+            metrics.put("score", Integer.valueOf(totalScore));
+            metrics.put("score_threshold", Integer.valueOf(SCORE_THRESHOLD));
+            metrics.put("minimum_dns_events", Integer.valueOf(MIN_DNS_EVENTS));
+            metrics.put("window_ms", Long.valueOf(WINDOW_MS));
+            metrics.put("window_seconds", Long.valueOf(WINDOW_MS / 1000));
+            metrics.put("indicators", new ArrayList<String>(indicators));
+
+            String description = "Source " + sourceIp + " generated " + history.size()
+                + " suspicious DNS events with score " + totalScore + " in "
+                + (WINDOW_MS / 1000) + " seconds. Indicators include "
+                + new ArrayList<String>(indicators) + ".";
+            String recommendation = "Inspect DNS query names and response codes for tunneling or exfiltration patterns, especially repeated TXT/NULL/ANY queries and high-entropy labels.";
+
             return Collections.singletonList(
                 new Alert(
                     event.getTimestamp(),
                     ruleName,
                     severity,
                     new ArrayList<Event>(history),
-                    sourceIp
+                    sourceIp,
+                    description,
+                    recommendation,
+                    metrics
                 )
             );
         }
