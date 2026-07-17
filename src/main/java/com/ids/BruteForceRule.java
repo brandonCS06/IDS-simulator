@@ -7,15 +7,29 @@ import java.util.List;
 import java.util.Map;
 
 public class BruteForceRule implements RuleEngineRules {
-    private static final long time_Window_ms = 60_000; // 1 minute window
-    private static final int threshold = 5; // Threshold for failed logins
+    private static final long DEFAULT_WINDOW_MS = 60_000; // 1 minute window
+    private static final int DEFAULT_THRESHOLD = 5; // Threshold for failed logins
 
     private final SlidingWindow window;
+    private final long windowMs;
+    private final int threshold;
     private final String ruleName = "BruteForceRule";
     private final String severity = "high";
 
     public BruteForceRule() {
-        this.window = new SlidingWindow(time_Window_ms);
+        this(DEFAULT_WINDOW_MS, DEFAULT_THRESHOLD);
+    }
+
+    public BruteForceRule(long windowMs, int threshold) {
+        if (windowMs <= 0) {
+            throw new IllegalArgumentException("windowMs must be positive");
+        }
+        if (threshold <= 0) {
+            throw new IllegalArgumentException("threshold must be positive");
+        }
+        this.windowMs = windowMs;
+        this.threshold = threshold;
+        this.window = new SlidingWindow(windowMs);
     }
 
     @Override
@@ -43,11 +57,11 @@ public class BruteForceRule implements RuleEngineRules {
             Map<String, Object> metrics = new HashMap<String, Object>();
             metrics.put("failed_login_count", Integer.valueOf(failedLogins.size()));
             metrics.put("threshold", Integer.valueOf(threshold));
-            metrics.put("window_ms", Long.valueOf(time_Window_ms));
-            metrics.put("window_seconds", Long.valueOf(time_Window_ms / 1000));
+            metrics.put("window_ms", Long.valueOf(windowMs));
+            metrics.put("window_seconds", Long.valueOf(windowMs / 1000));
 
             String description = "Source " + sourceIp + " produced " + failedLogins.size()
-                + " failed login attempts within " + (time_Window_ms / 1000)
+                + " failed login attempts within " + (windowMs / 1000)
                 + " seconds, meeting the brute-force threshold of " + threshold + ".";
             String recommendation = "Review authentication logs for the source IP, verify whether the user activity is legitimate, and consider rate limiting or temporary blocking.";
 

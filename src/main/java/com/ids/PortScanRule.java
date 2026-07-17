@@ -9,11 +9,28 @@ import java.util.Map;
 import java.util.Set;
 
 public class PortScanRule implements RuleEngineRules {
-    private static final long WINDOW_MS = 60_000;
-    private static final int PORT_THRESHOLD = 30;
+    private static final long DEFAULT_WINDOW_MS = 60_000;
+    private static final int DEFAULT_PORT_THRESHOLD = 30;
     private final Map<String, List<Event>> recentEventsByIp = new HashMap<>();
+    private final long windowMs;
+    private final int portThreshold;
     private final String ruleName = "PortScanRule";
     private final String severity = "high";
+
+    public PortScanRule() {
+        this(DEFAULT_WINDOW_MS, DEFAULT_PORT_THRESHOLD);
+    }
+
+    public PortScanRule(long windowMs, int portThreshold) {
+        if (windowMs <= 0) {
+            throw new IllegalArgumentException("windowMs must be positive");
+        }
+        if (portThreshold <= 0) {
+            throw new IllegalArgumentException("portThreshold must be positive");
+        }
+        this.windowMs = windowMs;
+        this.portThreshold = portThreshold;
+    }
 
     @Override
     public List<Alert> onEvent(Event event) {
@@ -39,15 +56,15 @@ public class PortScanRule implements RuleEngineRules {
             }
         }
 
-        if (uniquePorts.size() >= PORT_THRESHOLD) {
+        if (uniquePorts.size() >= portThreshold) {
             Map<String, Object> metrics = new HashMap<String, Object>();
             metrics.put("unique_destination_ports", Integer.valueOf(uniquePorts.size()));
-            metrics.put("threshold", Integer.valueOf(PORT_THRESHOLD));
-            metrics.put("window_ms", Long.valueOf(WINDOW_MS));
-            metrics.put("window_seconds", Long.valueOf(WINDOW_MS / 1000));
+            metrics.put("threshold", Integer.valueOf(portThreshold));
+            metrics.put("window_ms", Long.valueOf(windowMs));
+            metrics.put("window_seconds", Long.valueOf(windowMs / 1000));
 
             String description = "Source " + sourceIp + " contacted " + uniquePorts.size()
-                + " unique destination ports within " + (WINDOW_MS / 1000)
+                + " unique destination ports within " + (windowMs / 1000)
                 + " seconds, which matches horizontal or vertical port scan behavior.";
             String recommendation = "Check whether this source is an approved scanner; otherwise investigate the host and consider blocking repeated probes.";
 
@@ -68,7 +85,7 @@ public class PortScanRule implements RuleEngineRules {
     }
 
     private void pruneExpired(List<Event> history, long timestamp) {
-        long cutoff = timestamp - WINDOW_MS;
+        long cutoff = timestamp - windowMs;
         while (!history.isEmpty() && history.get(0).getTimestamp() < cutoff) {
             history.remove(0);
         }
