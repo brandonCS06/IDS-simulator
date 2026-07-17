@@ -296,6 +296,88 @@ def generate_icmp_sweep_activity(
     return events
 
 
+def generate_syn_flood_activity(num_syn_packets=80, num_ack_packets=5, base_time=None):
+    """
+    Generate a list of SYN flood activity events.
+    - num_syn_packets: Number of SYN packets in the flood burst.
+    - num_ack_packets: Number of ACK packets observed for the same tuple.
+    - base_time: Base timestamp for the burst.
+    """
+    events = []
+    ip = generate_ip(is_attack=True)
+    user = generate_user()
+    if base_time is None:
+        base_time = datetime.datetime.now()
+
+    destination_ip = random.choice(["198.51.100.20", "198.51.100.21", "198.51.100.22"])
+    destination_port = random.choice([80, 443, 8080])
+
+    for i in range(num_syn_packets):
+        timestamp = int((base_time + datetime.timedelta(milliseconds=i * 100)).timestamp() * 1000)
+        metadata = {
+            "protocol": "TCP",
+            "destination_ip": destination_ip,
+            "destination_port": destination_port,
+            "tcp_flags": "SYN",
+            "syn": True,
+            "ack": False,
+            "attempt": i + 1,
+        }
+        event = generate_event("CONNECTION_ATTEMPT", ip, user=user, target="web_server", timestamp=timestamp, metadata=metadata)
+        events.append(event)
+
+    # Add sparse ACK completion events for the same tuple.
+    for i in range(num_ack_packets):
+        timestamp = int((base_time + datetime.timedelta(milliseconds=(num_syn_packets * 100) + (i * 120))).timestamp() * 1000)
+        metadata = {
+            "protocol": "TCP",
+            "destination_ip": destination_ip,
+            "destination_port": destination_port,
+            "tcp_flags": "ACK",
+            "syn": False,
+            "ack": True,
+            "attempt": i + 1,
+        }
+        event = generate_event("CONNECTION_ACK", ip, user=user, target="web_server", timestamp=timestamp, metadata=metadata)
+        events.append(event)
+
+    return events
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Generate simulated network activity logs in JSON format.")
+    parser.add_argument("--output", default="Events.json", help="Output JSON file path (default: Events.json).")
+    parser.add_argument("--normal", type=int, default=10, help="Number of normal events to generate.")
+    parser.add_argument("--attacks", type=int, default=1, help="Number of attack sequences to generate.")
+    parser.add_argument("--attempts_per_attack", type=int, default=5, help="Failed attempts per attack.")
+    parser.add_argument("--portscans", type=int, default=1, help="Number of port scan sequences to generate.")
+    parser.add_argument("--ports_per_scan", type=int, default=30, help="Unique destination ports per port scan sequence.")
+    parser.add_argument("--dnsattacks", type=int, default=1, help="Number of suspicious DNS sequences to generate.")
+    parser.add_argument("--dns_queries_per_attack", type=int, default=6, help="DNS queries per suspicious DNS sequence.")
+    parser.add_argument("--icmpsweeps", type=int, default=1, help="Number of ICMP sweep sequences to generate.")
+    parser.add_argument("--icmp_targets_per_sweep", type=int, default=30, help="Unique destination IPs per ICMP sweep sequence.")
+    parser.add_argument("--synfloods", type=int, default=1, help="Number of SYN flood sequences to generate.")
+    parser.add_argument("--syn_packets_per_flood", type=int, default=80, help="SYN packets per SYN flood sequence.")
+    parser.add_argument("--acks_per_flood", type=int, default=5, help="ACK packets per SYN flood sequence.")
+    args = parser.parse_args()
+
+    base_time = datetime.datetime.now()
+
+    # Generate events
+    events = []
+    events.extend(generate_normal_activity(args.normal, base_time))
+    for _ in range(args.attacks):
+        events.extend(generate_attack_activity(args.attempts_per_attack, base_time))
+    for _ in range(args.portscans):
+        events.extend(generate_port_scan_activity(args.ports_per_scan, base_time))
+    for _ in range(args.dnsattacks):
+        events.extend(generate_suspicious_dns_activity(args.dns_queries_per_attack, base_time))
+    for _ in range(args.icmpsweeps):
+        events.extend(generate_icmp_sweep_activity(args.icmp_targets_per_sweep, base_time))
+    for _ in range(args.synfloods):
+        events.extend(generate_syn_flood_activity(args.syn_packets_per_flood, args.acks_per_flood, base_time))
+
+    # Sort by timestamp for realism
 def load_config(path: str | None) -> dict[str, Any]:
     if path is None:
         return {}
