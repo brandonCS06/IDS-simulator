@@ -272,8 +272,6 @@ IDS-simulator/
     ├── log_generator.py       # Synthetic event generation
     ├── log_parser.py          # Raw log parsing
     └── report_generator.py    # Alert report generation
-└── tests/
-    └── test_python_utilities.py # Python utility tests
 ```
 
 ## Dependencies
