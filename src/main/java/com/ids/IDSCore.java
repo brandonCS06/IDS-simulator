@@ -12,24 +12,57 @@ public class IDSCore {
 
     public IDSCore()
     {
+        this(RuleConfig.defaults());
+    }
+
+    public IDSCore(RuleConfig ruleConfig)
+    {
         this.ruleEngine = new RuleEngine();
         this.alertManager = new AlertManager(null);
 
-        registerDefaultRules();
+        registerDefaultRules(ruleConfig);
     }
 
     public void registerDefaultRules()
     {
+        registerDefaultRules(RuleConfig.defaults());
+    }
+
+    public void registerDefaultRules(RuleConfig ruleConfig)
+    {
+        if (ruleConfig == null) {
+            ruleConfig = RuleConfig.defaults();
+        }
+        ruleConfig.validate();
+
         //adds brute-force detection
-        ruleEngine.registerRule(new BruteForceRule());
+        ruleEngine.registerRule(new BruteForceRule(
+            ruleConfig.brute_force.window_ms,
+            ruleConfig.brute_force.threshold
+        ));
         //adds port scan detection
-        ruleEngine.registerRule(new PortScanRule());
+        ruleEngine.registerRule(new PortScanRule(
+            ruleConfig.port_scan.window_ms,
+            ruleConfig.port_scan.port_threshold
+        ));
         //adds suspicious DNS detection
-        ruleEngine.registerRule(new SuspiciousDnsRule());
+        ruleEngine.registerRule(new SuspiciousDnsRule(
+            ruleConfig.suspicious_dns.window_ms,
+            ruleConfig.suspicious_dns.minimum_dns_events,
+            ruleConfig.suspicious_dns.score_threshold
+        ));
         //adds SYN flood detection
-        ruleEngine.registerRule(new SynFloodRule());
+        ruleEngine.registerRule(new SynFloodRule(
+            ruleConfig.syn_flood.window_ms,
+            ruleConfig.syn_flood.syn_threshold,
+            ruleConfig.syn_flood.minimum_syn_for_ratio,
+            ruleConfig.syn_flood.max_ack_ratio
+        ));
         //adds ICMP sweep detection
-        ruleEngine.registerRule(new IcmpSweepRule());
+        ruleEngine.registerRule(new IcmpSweepRule(
+            ruleConfig.icmp_sweep.window_ms,
+            ruleConfig.icmp_sweep.icmp_threshold
+        ));
     }
 
     public void loadEvents(String filePath) throws IOException {
@@ -86,15 +119,23 @@ public class IDSCore {
     }
 
     public static void main(String[] args) {
-        IDSCore core = new IDSCore();
         try {
             String eventsFile = args.length > 0 ? args[0] : "Events.json";
+            RuleConfig ruleConfig = args.length > 1 ? RuleConfig.load(args[1]) : RuleConfig.defaults();
+            if (args.length > 1) {
+                System.out.println("Loaded rule config from " + args[1]);
+            }
+
+            IDSCore core = new IDSCore(ruleConfig);
             core.loadEvents(eventsFile);
             core.processEvents();
             core.exportAlerts("Alerts.json");
             //Export to file
         } catch (IOException e) {
             System.err.println("Failed to run IDS Core: " + e.getMessage());
+            System.exit(1);
+        } catch (IllegalArgumentException e) {
+            System.err.println("Invalid rule config: " + e.getMessage());
             System.exit(1);
         }
     }

@@ -9,13 +9,35 @@ import java.util.Map;
 import java.util.Set;
 
 public class SuspiciousDnsRule implements RuleEngineRules {
-    private static final long WINDOW_MS = 60_000;
-    private static final int MIN_DNS_EVENTS = 5;
-    private static final int SCORE_THRESHOLD = 8;
+    private static final long DEFAULT_WINDOW_MS = 60_000;
+    private static final int DEFAULT_MIN_DNS_EVENTS = 5;
+    private static final int DEFAULT_SCORE_THRESHOLD = 8;
 
     private final Map<String, List<Event>> recentEventsByIp = new HashMap<String, List<Event>>();
+    private final long windowMs;
+    private final int minimumDnsEvents;
+    private final int scoreThreshold;
     private final String ruleName = "SuspiciousDnsRule";
     private final String severity = "high";
+
+    public SuspiciousDnsRule() {
+        this(DEFAULT_WINDOW_MS, DEFAULT_MIN_DNS_EVENTS, DEFAULT_SCORE_THRESHOLD);
+    }
+
+    public SuspiciousDnsRule(long windowMs, int minimumDnsEvents, int scoreThreshold) {
+        if (windowMs <= 0) {
+            throw new IllegalArgumentException("windowMs must be positive");
+        }
+        if (minimumDnsEvents <= 0) {
+            throw new IllegalArgumentException("minimumDnsEvents must be positive");
+        }
+        if (scoreThreshold <= 0) {
+            throw new IllegalArgumentException("scoreThreshold must be positive");
+        }
+        this.windowMs = windowMs;
+        this.minimumDnsEvents = minimumDnsEvents;
+        this.scoreThreshold = scoreThreshold;
+    }
 
     @Override
     public List<Alert> onEvent(Event event) {
@@ -39,19 +61,19 @@ public class SuspiciousDnsRule implements RuleEngineRules {
             totalScore += scoreEvent(historyEvent, indicators);
         }
 
-        if (history.size() >= MIN_DNS_EVENTS && totalScore >= SCORE_THRESHOLD && indicators.size() >= 2) {
+        if (history.size() >= minimumDnsEvents && totalScore >= scoreThreshold && indicators.size() >= 2) {
             Map<String, Object> metrics = new HashMap<String, Object>();
             metrics.put("dns_event_count", Integer.valueOf(history.size()));
             metrics.put("score", Integer.valueOf(totalScore));
-            metrics.put("score_threshold", Integer.valueOf(SCORE_THRESHOLD));
-            metrics.put("minimum_dns_events", Integer.valueOf(MIN_DNS_EVENTS));
-            metrics.put("window_ms", Long.valueOf(WINDOW_MS));
-            metrics.put("window_seconds", Long.valueOf(WINDOW_MS / 1000));
+            metrics.put("score_threshold", Integer.valueOf(scoreThreshold));
+            metrics.put("minimum_dns_events", Integer.valueOf(minimumDnsEvents));
+            metrics.put("window_ms", Long.valueOf(windowMs));
+            metrics.put("window_seconds", Long.valueOf(windowMs / 1000));
             metrics.put("indicators", new ArrayList<String>(indicators));
 
             String description = "Source " + sourceIp + " generated " + history.size()
                 + " suspicious DNS events with score " + totalScore + " in "
-                + (WINDOW_MS / 1000) + " seconds. Indicators include "
+                + (windowMs / 1000) + " seconds. Indicators include "
                 + new ArrayList<String>(indicators) + ".";
             String recommendation = "Inspect DNS query names and response codes for tunneling or exfiltration patterns, especially repeated TXT/NULL/ANY queries and high-entropy labels.";
 
@@ -195,7 +217,7 @@ public class SuspiciousDnsRule implements RuleEngineRules {
     }
 
     private void pruneExpired(List<Event> history, long timestamp) {
-        long cutoff = timestamp - WINDOW_MS;
+        long cutoff = timestamp - windowMs;
         while (!history.isEmpty() && history.get(0).getTimestamp() < cutoff) {
             history.remove(0);
         }

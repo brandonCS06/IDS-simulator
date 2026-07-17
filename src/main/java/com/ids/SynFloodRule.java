@@ -7,14 +7,41 @@ import java.util.List;
 import java.util.Map;
 
 public class SynFloodRule implements RuleEngineRules {
-    private static final long WINDOW_MS = 10_000;
-    private static final int SYN_THRESHOLD = 60;
-    private static final int MIN_SYN_FOR_RATIO = 30;
-    private static final double MAX_ACK_RATIO = 0.20d;
+    private static final long DEFAULT_WINDOW_MS = 10_000;
+    private static final int DEFAULT_SYN_THRESHOLD = 60;
+    private static final int DEFAULT_MIN_SYN_FOR_RATIO = 30;
+    private static final double DEFAULT_MAX_ACK_RATIO = 0.20d;
 
     private final Map<String, List<Event>> recentEventsByTuple = new HashMap<String, List<Event>>();
+    private final long windowMs;
+    private final int synThreshold;
+    private final int minimumSynForRatio;
+    private final double maxAckRatio;
     private final String ruleName = "SynFloodRule";
     private final String severity = "high";
+
+    public SynFloodRule() {
+        this(DEFAULT_WINDOW_MS, DEFAULT_SYN_THRESHOLD, DEFAULT_MIN_SYN_FOR_RATIO, DEFAULT_MAX_ACK_RATIO);
+    }
+
+    public SynFloodRule(long windowMs, int synThreshold, int minimumSynForRatio, double maxAckRatio) {
+        if (windowMs <= 0) {
+            throw new IllegalArgumentException("windowMs must be positive");
+        }
+        if (synThreshold <= 0) {
+            throw new IllegalArgumentException("synThreshold must be positive");
+        }
+        if (minimumSynForRatio <= 0) {
+            throw new IllegalArgumentException("minimumSynForRatio must be positive");
+        }
+        if (maxAckRatio <= 0.0d) {
+            throw new IllegalArgumentException("maxAckRatio must be positive");
+        }
+        this.windowMs = windowMs;
+        this.synThreshold = synThreshold;
+        this.minimumSynForRatio = minimumSynForRatio;
+        this.maxAckRatio = maxAckRatio;
+    }
 
     @Override
     public List<Alert> onEvent(Event event) {
@@ -50,9 +77,9 @@ public class SynFloodRule implements RuleEngineRules {
             }
         }
 
-        if (synCount >= SYN_THRESHOLD && synCount >= MIN_SYN_FOR_RATIO) {
+        if (synCount >= synThreshold && synCount >= minimumSynForRatio) {
             double ackRatio = (double) ackCount / (double) Math.max(1, synCount);
-            if (ackRatio < MAX_ACK_RATIO) {
+            if (ackRatio < maxAckRatio) {
                 String destinationIp = normalizeKeyPart(getMetadataString(event, "destination_ip"));
                 Integer destinationPort = event.getDestinationPort();
 
@@ -60,19 +87,20 @@ public class SynFloodRule implements RuleEngineRules {
                 metrics.put("syn_count", Integer.valueOf(synCount));
                 metrics.put("ack_count", Integer.valueOf(ackCount));
                 metrics.put("ack_ratio", Double.valueOf(ackRatio));
-                metrics.put("max_ack_ratio", Double.valueOf(MAX_ACK_RATIO));
-                metrics.put("syn_threshold", Integer.valueOf(SYN_THRESHOLD));
-                metrics.put("window_ms", Long.valueOf(WINDOW_MS));
-                metrics.put("window_seconds", Long.valueOf(WINDOW_MS / 1000));
+                metrics.put("max_ack_ratio", Double.valueOf(maxAckRatio));
+                metrics.put("syn_threshold", Integer.valueOf(synThreshold));
+                metrics.put("minimum_syn_for_ratio", Integer.valueOf(minimumSynForRatio));
+                metrics.put("window_ms", Long.valueOf(windowMs));
+                metrics.put("window_seconds", Long.valueOf(windowMs / 1000));
                 metrics.put("destination_ip", destinationIp);
                 metrics.put("destination_port", destinationPort == null ? "*" : destinationPort);
 
                 String description = "Source " + event.getSource_ip() + " sent " + synCount
                     + " TCP SYN packets toward " + destinationIp + ":"
                     + (destinationPort == null ? "*" : destinationPort.toString())
-                    + " in " + (WINDOW_MS / 1000) + " seconds, but only " + ackCount
+                    + " in " + (windowMs / 1000) + " seconds, but only " + ackCount
                     + " ACK packets were observed. The ACK ratio was " + ackRatio
-                    + ", below the allowed " + MAX_ACK_RATIO + ".";
+                    + ", below the allowed " + maxAckRatio + ".";
                 String recommendation = "Review TCP handshake completion for this flow; many SYNs with few ACKs can indicate half-open connection flooding.";
 
                 return Collections.singletonList(
@@ -198,7 +226,7 @@ public class SynFloodRule implements RuleEngineRules {
     }
 
     private void pruneExpired(List<Event> history, long timestamp) {
-        long cutoff = timestamp - WINDOW_MS;
+        long cutoff = timestamp - windowMs;
         while (!history.isEmpty() && history.get(0).getTimestamp() < cutoff) {
             history.remove(0);
         }

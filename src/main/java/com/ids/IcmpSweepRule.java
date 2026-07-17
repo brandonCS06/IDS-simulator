@@ -9,13 +9,30 @@ import java.util.Map;
 import java.util.Set;
 
 public class IcmpSweepRule implements RuleEngineRules {
-    private static final long WINDOW_MS = 60_000;
-    private static final int ICMP_THRESHOLD = 30;
+    private static final long DEFAULT_WINDOW_MS = 60_000;
+    private static final int DEFAULT_ICMP_THRESHOLD = 30;
     private static final int ICMP_ECHO_REQUEST_TYPE = 8;
 
     private final Map<String, List<Event>> recentEventsByIp = new HashMap<String, List<Event>>();
+    private final long windowMs;
+    private final int icmpThreshold;
     private final String ruleName = "IcmpSweepRule";
     private final String severity = "high";
+
+    public IcmpSweepRule() {
+        this(DEFAULT_WINDOW_MS, DEFAULT_ICMP_THRESHOLD);
+    }
+
+    public IcmpSweepRule(long windowMs, int icmpThreshold) {
+        if (windowMs <= 0) {
+            throw new IllegalArgumentException("windowMs must be positive");
+        }
+        if (icmpThreshold <= 0) {
+            throw new IllegalArgumentException("icmpThreshold must be positive");
+        }
+        this.windowMs = windowMs;
+        this.icmpThreshold = icmpThreshold;
+    }
 
     @Override
     public List<Alert> onEvent(Event event) {
@@ -51,17 +68,17 @@ public class IcmpSweepRule implements RuleEngineRules {
             }
         }
 
-        if (uniqueDestinationIps.size() >= ICMP_THRESHOLD) {
+        if (uniqueDestinationIps.size() >= icmpThreshold) {
             Map<String, Object> metrics = new HashMap<String, Object>();
             metrics.put("unique_destination_ips", Integer.valueOf(uniqueDestinationIps.size()));
-            metrics.put("threshold", Integer.valueOf(ICMP_THRESHOLD));
-            metrics.put("window_ms", Long.valueOf(WINDOW_MS));
-            metrics.put("window_seconds", Long.valueOf(WINDOW_MS / 1000));
+            metrics.put("threshold", Integer.valueOf(icmpThreshold));
+            metrics.put("window_ms", Long.valueOf(windowMs));
+            metrics.put("window_seconds", Long.valueOf(windowMs / 1000));
             metrics.put("icmp_type", Integer.valueOf(ICMP_ECHO_REQUEST_TYPE));
 
             String description = "Source " + sourceIp + " sent ICMP echo requests to "
                 + uniqueDestinationIps.size() + " unique destination IPs within "
-                + (WINDOW_MS / 1000) + " seconds, which suggests network sweep reconnaissance.";
+                + (windowMs / 1000) + " seconds, which suggests network sweep reconnaissance.";
             String recommendation = "Confirm whether this is expected monitoring or discovery traffic; unexpected sweeps should be investigated as reconnaissance.";
 
             Alert alert = new Alert(
@@ -133,7 +150,7 @@ public class IcmpSweepRule implements RuleEngineRules {
     }
     
     private void pruneExpired(List<Event> history, long timestamp) {
-        long cutoff = timestamp - WINDOW_MS;
+        long cutoff = timestamp - windowMs;
         while (!history.isEmpty() && history.get(0).getTimestamp() < cutoff) {
             history.remove(0);
         }

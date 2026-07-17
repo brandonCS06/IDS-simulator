@@ -91,6 +91,15 @@ This will:
 java -cp "target/classes:$HOME/.m2/repository/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar" com.ids.IDSCore path/to/events.json
 ```
 
+#### With Custom Rule Thresholds
+
+Copy `rules.example.json`, adjust the values you want to tune, then pass it as
+the second argument:
+
+```bash
+java -cp "target/classes:$HOME/.m2/repository/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar" com.ids.IDSCore Events.json rules.example.json
+```
+
 ### Python Utilities
 
 #### Generate Synthetic Events
@@ -393,45 +402,50 @@ Run it with:
 python python/log_generator.py --config simulation.toml
 ```
 
-### Brute Force Rule Settings
+### Java Rule Settings
 
-In `BruteForceRule.java`, adjust:
+The Java IDS accepts an optional JSON rule config file. Start from
+`rules.example.json`:
 
-```java
-private static final long time_Window_ms = 60_000;  // Time window in milliseconds
-private static final int threshold = 5;             // Failed login threshold
+```json
+{
+  "brute_force": {
+    "window_ms": 60000,
+    "threshold": 5
+  },
+  "port_scan": {
+    "window_ms": 60000,
+    "port_threshold": 30
+  },
+  "suspicious_dns": {
+    "window_ms": 60000,
+    "minimum_dns_events": 5,
+    "score_threshold": 8
+  },
+  "syn_flood": {
+    "window_ms": 10000,
+    "syn_threshold": 60,
+    "minimum_syn_for_ratio": 30,
+    "max_ack_ratio": 0.2
+  },
+  "icmp_sweep": {
+    "window_ms": 60000,
+    "icmp_threshold": 30
+  },
+  "[custom rule name]": {
+    "thresholds": "threshold values",
+    "..."
+  }
+}
 ```
 
-In `PortScanRule.java`, adjust:
+Run the IDS with a config file:
 
-```java
-private static final long WINDOW_MS = 60_000; // Time window in milliseconds
-private static final int PORT_THRESHOLD = 30; // Port destination threshold
+```bash
+java -cp "target/classes:$HOME/.m2/repository/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar" com.ids.IDSCore Events.json rules.example.json
 ```
 
-In `IcmpSweepRule.java`, adjust:
-
-```java
-private static final long WINDOW_MS = 60_000; // Time window in milliseconds
-private static final int ICMP_THRESHOLD = 30;  // Unique destination IP threshold
-```
-
-In `SuspiciousDnsRule.java`, adjust:
-
-```java
-private static final long WINDOW_MS = 60_000; // Time window in milliseconds
-private static final int MIN_DNS_EVENTS = 5; // Minimum events needed to raise alerts
-private static final int SCORE_THRESHOLD = 8; // Suspicion threshold
-```
-
-In `SynFloodRule.java`, adjust:
-
-```java
-private static final long WINDOW_MS = 10_000; // Time window in milliseconds
-private static final int SYN_THRESHOLD = 60; // Minimum SYN packet count within the window required before evaluating flood behavior
-private static final int MIN_SYN_FOR_RATIO = 30; // Minimum SYN denominator used to avoid ratio checks on very small traffic bursts
-private static final double MAX_ACK_RATIO = 0.20d; // Maximum ACK-to-SYN ratio allowed; lower observed ratios indicate likely SYN flood traffic
-```
+Any omitted section uses the built-in default values.
 
 ## Output Files
 
