@@ -1,10 +1,10 @@
-# IDS Simulator
+# Network IDS Simulator
 
-An Intrusion Detection System (IDS) simulator that processes security events and detects suspicious activities using configurable detection rules. The system combines a Java-based event processing engine with Python utilities for log generation, parsing, and reporting.
+A Network Intrusion Detection System (IDS) simulator that processes network-style security events and detects suspicious activities using configurable detection rules. The system combines a Java-based event processing engine with Python utilities for log generation, parsing, and reporting.
 
 ## Overview
 
-The IDS Simulator is designed to:
+The Network IDS Simulator is designed to:
 - **Simulate realistic network activity** with normal and attack patterns
 - **Process security events** in real-time against detection rules
 - **Detect threats** using rule-based analysis (e.g., brute force attacks)
@@ -35,7 +35,7 @@ The IDS Simulator is designed to:
 - **log_generator.py** - Generates synthetic security events with configurable normal and attack traffic patterns
 - **log_parser.py** - Parses raw logs into the standardized Event format
 - **report_generator.py** - Summarizes alerts with statistics by rule, source IP, top attackers, alert explanations, metrics, and optional HTML output
-- **demo.py** - Runs the demo pipeline end to end: generate events, run the Java IDS, and create an HTML report
+- **demo.py** - Runs the demo pipeline end to end: generate events, run the Java network IDS engine, and create an HTML report
 
 ### Data Flow
 
@@ -83,8 +83,8 @@ python python/demo.py
 
 This will:
 1. Generate synthetic network events
-2. Compile the Java IDS
-3. Run the IDS against the generated events
+2. Compile the Java network IDS engine
+3. Run the network IDS simulation against the generated events
 4. Generate a demo-friendly HTML report
 
 By default, demo artifacts are written to `demo-output/`:
@@ -125,7 +125,7 @@ Custom Java rules still use the normal project workflow: implement the rule,
 register it in `IDSCore`, then run the demo script so it compiles and executes
 the updated project.
 
-### Running the IDS
+### Running the Network IDS Simulation
 
 #### Basic Usage
 
@@ -385,7 +385,7 @@ IDS-simulator/
 
 ## Usage Examples
 
-### Example 1: Generate Events and Run IDS
+### Example 1: Generate Events and Run the Network IDS Simulation
 
 ```bash
 # Generate synthetic events
@@ -394,7 +394,7 @@ python python/log_generator.py --output Events.json --normal 500 --seed 42
 # Compile the Java project
 mvn clean compile
 
-# Run the IDS
+# Run the network IDS simulation
 java -cp "target/classes:$HOME/.m2/repository/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar" com.ids.IDSCore Events.json
 
 # Generate a report
@@ -459,7 +459,7 @@ python python/log_generator.py --config simulation.toml
 
 ### Java Rule Settings
 
-The Java IDS accepts an optional JSON rule config file. Start from
+The Java network IDS engine accepts an optional JSON rule config file. Start from
 `rules.example.json`:
 
 ```json
@@ -505,7 +505,7 @@ Any omitted section uses the built-in default values.
 ## Output Files
 
 - **Alerts.json** - Complete alert data with evidence
-- **Events.json** - Normalized input events for the Java IDS
+- **Events.json** - Normalized input events for the Java network IDS engine
 - Optional **report.json**, **report.csv**, or **report.html** from the Python reporter
 - Console output with processing statistics
 

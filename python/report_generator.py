@@ -163,8 +163,8 @@ def format_text_report(
     by_time_window: Counter[str] | None = None,
 ) -> str:
     lines: list[str] = []
-    lines.append("IDS ALERT REPORT")
-    lines.append("----------------")
+    lines.append("NETWORK IDS ALERT REPORT")
+    lines.append("------------------------")
     lines.append(f"Total Alerts: {total}")
     lines.append("")
     lines.append("Alerts by Rule:")
@@ -349,7 +349,7 @@ def format_html_report(summary: ReportSummary, alerts: list[Alert], top_n: int =
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>IDS Alert Report</title>
+    <title>Network IDS Alert Report</title>
     <style>
         :root {{
             color-scheme: light;
@@ -452,7 +452,7 @@ def format_html_report(summary: ReportSummary, alerts: list[Alert], top_n: int =
 <body>
 <main>
     <header>
-        <h1>IDS Alert Report</h1>
+        <h1>Network IDS Alert Report</h1>
         <p class="muted">Generated {generated_at}</p>
     </header>
     <section class="stats">
@@ -523,7 +523,7 @@ def write_report(summary: ReportSummary, alerts: list[Alert], output_format: str
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Generate an IDS alert summary report.")
+    parser = argparse.ArgumentParser(description="Generate a Network IDS alert summary report.")
     parser.add_argument("--input", default=str(default_alerts_path()), help="Path to Alerts.json.")
     parser.add_argument("--output", help="Optional report output path. Defaults to stdout.")
     parser.add_argument("--format", choices=["text", "json", "csv", "html"], default="text", help="Report format.")

@@ -12,7 +12,7 @@ from typing import Any, TypedDict
 
 """
 Utility CLI for converting raw log files into a normalized `Events.json`
-payload that the Java IDS core can consume. It accepts normalized JSON arrays,
+payload that the Java network IDS engine can consume. It accepts normalized JSON arrays,
 generic JSON objects/arrays, JSON Lines, and CSV logs, coercing them into a
 consistent Event schema and validating required fields before writing.
 """
@@ -53,7 +53,7 @@ def configure_logging(verbose: bool = False) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Parse raw log files into Events.json for Java IDS core."
+        description="Parse raw log files into Events.json for the Java network IDS engine."
     )
     parser.add_argument("--input", required=True, help="Path to raw log file.")
     parser.add_argument(

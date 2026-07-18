@@ -230,7 +230,7 @@ def run_demo(args: argparse.Namespace) -> int:
                 + ". Run 'mvn compile' and confirm Maven can download dependencies."
             )
 
-        run_command(java_command, "Run IDS", output_dir)
+        run_command(java_command, "Run Network IDS simulation", output_dir)
         run_command(report_command, "Generate HTML report", PROJECT_ROOT)
     except FileNotFoundError as exc:
         print(f"\nDemo failed: {exc}", file=sys.stderr)
@@ -254,7 +254,7 @@ def run_demo(args: argparse.Namespace) -> int:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run the IDS demo pipeline: generate events, run IDS, and create an HTML report."
+        description="Run the Network IDS Simulator demo pipeline: generate events, run detection, and create an HTML report."
     )
     parser.add_argument("--scenario", choices=SCENARIOS, default="all", help="Demo scenario to generate.")
     parser.add_argument("--rules", help="Optional JSON rule config path for built-in rule thresholds.")
