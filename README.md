@@ -35,6 +35,7 @@ The IDS Simulator is designed to:
 - **log_generator.py** - Generates synthetic security events with configurable normal and attack traffic patterns
 - **log_parser.py** - Parses raw logs into the standardized Event format
 - **report_generator.py** - Summarizes alerts with statistics by rule, source IP, top attackers, alert explanations, metrics, and optional HTML output
+- **demo.py** - Runs the demo pipeline end to end: generate events, run the Java IDS, and create an HTML report
 
 ### Data Flow
 
@@ -71,6 +72,58 @@ Alerts.json (output) + Report
 mvn clean compile
 mvn package
 ```
+
+### Try the Demo
+
+Run the full demo pipeline with one command:
+
+```bash
+python python/demo.py
+```
+
+This will:
+1. Generate synthetic network events
+2. Compile the Java IDS
+3. Run the IDS against the generated events
+4. Generate a demo-friendly HTML report
+
+By default, demo artifacts are written to `demo-output/`:
+
+```text
+demo-output/Events.json
+demo-output/Alerts.json
+demo-output/report.html
+```
+
+The script prints the HTML report path when it finishes. Open
+`demo-output/report.html` in a browser to review the alert dashboard.
+Existing demo artifacts are replaced on each run, and the default event
+generation uses fresh randomness/current time so the report changes between
+runs.
+
+You can run a specific scenario:
+
+```bash
+python python/demo.py --scenario syn-flood
+python python/demo.py --scenario port-scan
+python python/demo.py --scenario dns-tunnel
+```
+
+You can also pass custom built-in rule thresholds:
+
+```bash
+python python/demo.py --rules rules.example.json
+```
+
+For a reproducible demo run, pass a seed and optional fixed base time:
+
+```bash
+python python/demo.py --seed 42 --base-time 2026-07-15T12:00:00Z
+```
+
+Custom Java rules still use the normal project workflow: implement the rule,
+register it in `IDSCore`, then run the demo script so it compiles and executes
+the updated project.
 
 ### Running the IDS
 
@@ -243,6 +296,7 @@ Then register in `IDSCore`:
 ```java
 ruleEngine.registerRule(new CustomRule());
 ```
+For threshold configurations, register them in `rules.example.json`
 
 ## Event Schema
 
@@ -318,6 +372,7 @@ IDS-simulator/
 |       |-- SlidingWindow.java     # Time-based event window
 |       `-- SuspiciousDnsRule.java # DNS tunneling detection
 `-- python/
+    |-- demo.py                 # End-to-end demo runner
     |-- log_generator.py        # Synthetic event generation
     |-- log_parser.py           # Raw log parsing
     `-- report_generator.py     # Alert report generation

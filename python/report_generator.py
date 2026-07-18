@@ -354,8 +354,8 @@ def format_html_report(summary: ReportSummary, alerts: list[Alert], top_n: int =
         :root {{
             color-scheme: light;
             font-family: Arial, Helvetica, sans-serif;
-            background: #f6f7f9;
-            color: #17202a;
+            background: #324045;
+            color: #91AFC9;
         }}
         body {{
             margin: 0;
@@ -383,7 +383,7 @@ def format_html_report(summary: ReportSummary, alerts: list[Alert], top_n: int =
             margin-top: 10px;
         }}
         .muted {{
-            color: #627084;
+            color: #497065;
         }}
         .stats {{
             display: grid;
@@ -392,8 +392,8 @@ def format_html_report(summary: ReportSummary, alerts: list[Alert], top_n: int =
             margin: 24px 0;
         }}
         .stat, .alert-card, table {{
-            background: #ffffff;
-            border: 1px solid #d8dee8;
+            background: #1B2426;
+            border: 1px solid #1A2430;
             border-radius: 8px;
             box-shadow: 0 1px 2px rgba(14, 30, 37, 0.06);
         }}
@@ -411,11 +411,11 @@ def format_html_report(summary: ReportSummary, alerts: list[Alert], top_n: int =
         }}
         th, td {{
             padding: 10px 12px;
-            border-bottom: 1px solid #edf0f4;
+            border-bottom: 1px solid #1A2430;
             text-align: left;
         }}
         th {{
-            background: #eef2f6;
+            background: #41615D;
         }}
         .alert-card {{
             padding: 18px;
@@ -425,7 +425,7 @@ def format_html_report(summary: ReportSummary, alerts: list[Alert], top_n: int =
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            color: #526174;
+            color: #415861;
             font-size: 13px;
         }}
         .metrics {{
@@ -445,7 +445,7 @@ def format_html_report(summary: ReportSummary, alerts: list[Alert], top_n: int =
             font-size: 13px;
         }}
         .recommendation {{
-            color: #344457;
+            color: #728FAB;
         }}
     </style>
 </head>
