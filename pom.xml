@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.ids</groupId>
-    <artifactId>ids-simulator</artifactId>
+    <artifactId>network-ids-simulator</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
